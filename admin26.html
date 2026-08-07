@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#b94b2f" />
+  <title>智慧排班系統｜主管後台</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.svg" />
+  <link rel="icon" href="icons/icon-192.svg" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+  <div id="pinGate" class="pin-gate">
+    <div class="pin-card">
+      <div class="brand-mark large-mark" id="pinBrandMark"><img src="icons/icon-192.svg" alt="蔡叔叔比薩屋" /></div>
+      <h1 id="pinTitle">智慧排班系統｜主管後台</h1>
+      <p>請輸入 PIN 碼進入</p>
+      <input id="pinInput" class="input big-input" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN 碼" />
+      <button id="pinSubmit" class="primary-btn full">進入</button>
+      <div id="pinError" class="form-error"></div>
+    </div>
+  </div>
+  <div id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" id="brandMark"><img src="icons/icon-192.svg" alt="蔡叔叔比薩屋" /></div>
+        <div>
+          <strong id="brandName">智慧排班系統</strong>
+          <span>主管後台</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard">總覽</button>
+        <div class="nav-group">作業</div>
+        <button class="nav-item" data-view="availability">可上班時間</button>
+        <button class="nav-item" data-view="schedule">排班管理</button>
+        <button class="nav-item" data-view="hours">工時統計</button>
+        <div class="nav-group">設定</div>
+        <button class="nav-item" data-view="employees">員工管理</button>
+        <button class="nav-item" data-view="worktypes">工作項目</button>
+        <button class="nav-item" data-view="storeSettings">設定與維護</button>
+      </nav>
+      <div class="sidebar-note">
+        <strong id="sidebarNoteTitle">雲端同步版</strong>
+        <span id="sidebarNoteDesc">資料儲存於雲端，多裝置同步</span>
+      </div>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop hidden"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="menuBtn" aria-label="開啟選單">☰</button>
+        <div>
+          <h1 id="pageTitle">營運總覽</h1>
+          <p id="pageSubtitle">快速掌握本月排班與人力狀況</p>
+        </div>
+        <div class="topbar-actions"><span id="syncStatus" class="sync-badge init">◌ 初始化</span></div>
+      </header>
+
+      <section class="view active" id="dashboardView">
+        <section class="panel week-strip-panel">
+          <div class="panel-head">
+            <div><h3>本週概況</h3><p id="weekStripLabel"></p></div>
+            <button class="text-btn" data-view-target="schedule">前往排班</button>
+          </div>
+          <div id="dashboardWeek" class="week-strip"></div>
+        </section>
+
+        <div class="two-col">
+          <section class="panel">
+            <div class="panel-head">
+              <div><h3>今日班表</h3><p id="todayLabel"></p></div>
+              <button class="text-btn" data-quick="add-shift">＋ 新增班次</button>
+            </div>
+            <div id="todayShifts" class="stack-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><div><h3>待辦與提醒</h3><p>系統依目前資料自動提示</p></div></div>
+            <div id="dashboardWarnings" class="stack-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="employeesView">
+        <div class="section-toolbar end">
+          <button class="primary-btn" id="addEmployeeBtn">＋ 新增員工</button>
+        </div>
+        <div class="panel table-panel">
+          <div class="filter-row">
+            <input id="employeeSearch" class="input" placeholder="搜尋姓名或員工編號" />
+            <select id="employeeStatusFilter" class="select">
+              <option value="all">全部員工</option>
+              <option value="active">在職</option>
+              <option value="inactive">停用</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>員工</th><th>員工編號</th><th>可做工作</th><th>每週上限</th><th>狀態</th><th></th></tr></thead>
+              <tbody id="employeesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="worktypesView">
+        <div class="section-toolbar end">
+          <button class="primary-btn" id="addWorktypeBtn">＋ 新增工作</button>
+        </div>
+        <div class="panel table-panel">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>工作</th><th>套用休息</th><th>狀態</th><th></th></tr></thead>
+              <tbody id="worktypesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="scheduleView">
+        <div class="section-toolbar end">
+          <button class="ghost-btn" id="fixedShiftBtn">🗓 固定班次設定</button>
+          <button class="ghost-btn" id="printWeekBtn">🖨 列印週班表</button>
+          <button class="ghost-btn" id="exportScheduleBtn">⬇ 下載 CSV</button>
+          <button class="ghost-btn" id="copyLastWeekBtn">📋 複製上週班表</button>
+          <button class="ghost-btn" id="applyDemandBtn">套用固定班次</button>
+          <button class="primary-btn" id="schedAddBtn">＋ 新增班次</button>
+        </div>
+        <div class="schedule-stack">
+          <section class="panel calendar-panel">
+            <div class="calendar-head">
+              <div class="cal-nav">
+                <button class="icon-btn" id="prevMonthBtn">‹</button>
+                <strong id="calendarMonthLabel"></strong>
+                <button class="icon-btn" id="nextMonthBtn">›</button>
+              </div>
+              <button class="text-btn" id="calToggleBtn">展開整月</button>
+            </div>
+            <div class="weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+          </section>
+
+          <section class="panel timeline-panel">
+            <div class="panel-head sched-head">
+              <div><h3 id="selectedDateTitle"></h3><p id="selectedDateSummary"></p></div>
+              <div class="sched-controls">
+                <div class="sched-publish" id="schedPublish"></div>
+                <div class="seg" id="schedModeTabs">
+                  <button class="seg-btn active" data-smode="day">日</button>
+                  <button class="seg-btn" data-smode="week">週</button>
+                  <button class="seg-btn" data-smode="work">工作表</button>
+                </div>
+                <button class="ghost-btn small-btn hidden" id="workSplitBtn">平日／假日分開</button>
+                <button class="icon-btn" id="schedPrev">‹</button>
+                <button class="icon-btn" id="schedNext">›</button>
+              </div>
+            </div>
+            <p class="sched-hint" id="schedHint">點日曆空白時段可直接新增班次，點色塊可編輯。灰色斜紋＝草稿（員工看不到），公布後才會顯示給員工。</p>
+            <div class="sched-grid-wrap" id="scheduleGrid"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="availabilityView">
+        <div class="staff-tabs" id="availPageTabs">
+          <button class="staff-tab active" data-atab="settings">開放設定</button>
+          <button class="staff-tab" data-atab="overview">檢視與代填</button>
+        </div>
+
+        <div class="avail-tab-panel" id="availSettingsPanel">
+          <div class="section-toolbar end">
+            <button class="secondary-btn" id="openNextWeekBtn">開放填下週</button>
+            <button class="secondary-btn" id="openNextMonthBtn">開放填下個月</button>
+            <button class="secondary-btn" id="batchImportBtn">📋 貼上批次匯入</button>
+            <button class="primary-btn" id="addAvailabilityWindowBtn">＋ 新增開放區段</button>
+          </div>
+          <div id="availabilityWindowCards" class="window-card-grid"></div>
+        </div>
+
+        <div class="avail-tab-panel hidden" id="availOverviewPanel">
+          <div id="availOverviewSummary"></div>
+          <div class="avail-overview-bar">
+            <div class="staff-tabs" id="availModeTabs">
+              <button class="staff-tab active" data-mode="month">月曆模式</button>
+              <button class="staff-tab" data-mode="date">日期模式</button>
+              <button class="staff-tab" data-mode="employee">員工模式</button>
+            </div>
+            <button class="ghost-btn" id="exportAvailBtn">⬇ 下載 CSV</button>
+          </div>
+          <div id="availabilityOverviewBody"></div>
+        </div>
+      </section>
+
+      <section class="view" id="hoursView">
+        <div class="hours-toolbar">
+          <div class="ht-row">
+            <div class="seg" id="hoursModeTabs">
+              <button class="seg-btn active" data-hmode="week">週統計</button>
+              <button class="seg-btn" data-hmode="month">月統計</button>
+            </div>
+            <div class="hours-nav">
+              <button class="icon-btn" id="prevWeekBtn">‹</button>
+              <input type="date" class="input" id="hoursDateInput">
+              <button class="icon-btn" id="nextWeekBtn">›</button>
+            </div>
+            <button class="ghost-btn" id="thisWeekBtn">本週</button>
+          </div>
+          <div class="ht-row ht-filter">
+            <select class="select" id="hoursTypeFilter">
+              <option value="all">全部身分</option>
+              <option value="正職">正職</option>
+              <option value="工讀">工讀</option>
+              <option value="外籍學生">外籍學生</option>
+              <option value="其他">其他</option>
+            </select>
+            <input class="input" id="hoursSearchInput" placeholder="搜尋員工姓名／編號">
+            <button class="ghost-btn" id="exportHoursBtn">⬇ 下載 CSV</button>
+          </div>
+        </div>
+        <div class="info-banner">
+          <div>
+            <span>黃底＝接近上限（達 90%）、紅底＝有任一週超過每週上限。點員工可展開明細，並輸入實際打卡時間與班表核對；點「合計」欄可排序。</span>
+          </div>
+        </div>
+        <div class="panel table-panel"><div class="table-wrap" id="hoursTable"></div></div>
+      </section>
+
+      <section class="view" id="storeSettingsView">
+        <div class="staff-tabs settings-tabs" id="settingsTabs">
+          <button class="staff-tab active" data-sec="store">店家設定</button>
+          <button class="staff-tab" data-sec="restday">特定休息日</button>
+          <button class="staff-tab" data-sec="holiday">國定假日</button>
+          <button class="staff-tab" data-sec="maintenance">資料維護</button>
+          <button class="staff-tab" data-sec="help">使用說明</button>
+        </div>
+        <form class="panel settings-section" data-sec="store" id="storeSettingsForm" style="padding:22px"></form>
+        <div class="panel demand-card settings-section hidden" data-sec="restday" style="padding:22px">
+          <div class="demand-head">
+            <div><h3>特定休息日（臨時公休）</h3><p>指定單一日期整店休息（例如臨時公休、內部訓練），該日在排班與員工填寫都會鎖起來反灰。每週固定的公休請用上方店家設定的「每週公休日」；國定假日請用下方管理。</p></div>
+          </div>
+          <div class="holiday-add">
+            <input type="date" id="holidayDate" class="input" />
+            <input type="text" id="holidayNote" class="input" placeholder="說明（例如 內部訓練，選填）" />
+            <button type="button" class="secondary-btn" id="addHolidayBtn">新增休息日</button>
+          </div>
+          <div id="holidayList" class="demand-list"></div>
+        </div>
+        <div class="panel demand-card settings-section hidden" data-sec="holiday" style="padding:22px">
+          <div class="demand-head">
+            <div><h3>國定假日</h3><p>匯入後只會在月曆上「標示」假日名稱，不會自動公休；是否公休由您在每個假日按「設為公休」決定。也可用下方欄位自行新增假日（新年度或補班補假調整時使用）。</p></div>
+            <button type="button" class="secondary-btn" id="importHolidaysBtn">匯入台灣國定假日</button>
+          </div>
+          <div class="holiday-add">
+            <input type="date" id="nhDate" class="input" />
+            <input type="text" id="nhName" class="input" placeholder="假日名稱（例如 補班日、公司紀念日）" />
+            <button type="button" class="secondary-btn" id="addNationalHolidayBtn">新增假日</button>
+          </div>
+          <details class="nh-paste">
+            <summary>批次貼上匯入（自行匯入其他年度，不用等更新）</summary>
+            <p class="field-help">每行一個假日，格式「日期 名稱」，例如 <code>2028-01-01 元旦</code>。可從政府「辦公日曆表」或 Excel 直接複製貼上，系統會自動辨識日期。</p>
+            <textarea id="nhPasteText" rows="6" placeholder="2028-01-01 元旦&#10;2028-02-15 春節&#10;2028-02-16 春節"></textarea>
+            <button type="button" class="secondary-btn" id="nhPasteBtn">匯入這些假日</button>
+          </details>
+          <div id="nationalHolidayList" class="demand-list"></div>
+        </div>
+        <div class="panel maintenance-card settings-section hidden" data-sec="maintenance">
+          <h3>後台 PIN 碼</h3>
+          <p>進入後台管理時需輸入的密碼，預設 1234。修改後下次進入即生效。</p>
+          <form id="pinChangeForm" class="form-grid pin-change-form">
+            <label class="field"><span>目前 PIN 碼</span><input class="input" type="password" name="currentPin" inputmode="numeric" autocomplete="off"></label>
+            <label class="field"><span>新 PIN 碼</span><input class="input" type="password" name="newPin" inputmode="numeric" autocomplete="off"></label>
+            <label class="field"><span>再次輸入新 PIN 碼</span><input class="input" type="password" name="confirmPin" inputmode="numeric" autocomplete="off"></label>
+            <div class="span-2"><button class="primary-btn" type="submit">更新 PIN 碼</button></div>
+            <div id="pinChangeMsg" class="span-2"></div>
+          </form>
+          <hr class="soft-divider" />
+          <h3>資料備份與還原</h3>
+          <p>用於換裝置、搬站或定期備份。建議平時就用「完整備份」匯出一份保存。</p>
+          <div class="backup-block">
+            <strong>完整備份（推薦）</strong>
+            <span class="field-help">一個檔包含所有資料（員工、工作、班次、可上班時間、固定班次與設定）。</span>
+            <div class="backup-btns">
+              <button type="button" class="secondary-btn" id="exportAllBtn">⬇ 匯出完整備份</button>
+              <button type="button" class="ghost-btn" id="importAllBtn">⬆ 還原完整備份</button>
+              <input type="file" id="importAllFile" accept="application/json,.json" hidden />
+            </div>
+          </div>
+          <div class="backup-block">
+            <strong>分項備份</strong>
+            <span class="field-help">只匯出／匯入單一類別，適合把某類資料搬到另一間店。匯入會覆蓋該類別現有資料。</span>
+            <div class="backup-btns">
+              <button type="button" class="ghost-btn small-btn" id="exportEmployeesBtn">⬇ 員工</button>
+              <button type="button" class="ghost-btn small-btn" id="importEmployeesBtn">⬆ 員工</button>
+              <input type="file" id="importEmployeesFile" accept="application/json,.json" hidden />
+              <button type="button" class="ghost-btn small-btn" id="exportWorktypesBtn">⬇ 工作</button>
+              <button type="button" class="ghost-btn small-btn" id="importWorktypesBtn">⬆ 工作</button>
+              <input type="file" id="importWorktypesFile" accept="application/json,.json" hidden />
+              <button type="button" class="ghost-btn small-btn" id="exportDemandBtn">⬇ 固定班次</button>
+              <button type="button" class="ghost-btn small-btn" id="importDemandBtn">⬆ 固定班次</button>
+              <input type="file" id="importDemandFile" accept="application/json,.json" hidden />
+            </div>
+          </div>
+          <hr class="soft-divider" />
+          <h3>資料清理</h3>
+          <p>清除舊的排班班次與可上班時間，讓資料量不會無限增加。工時是依班次即時計算，清掉舊班次即清掉舊工時。員工、工作、固定班次設定不會被清。此動作無法復原，建議先用上方「完整備份」匯出。</p>
+          <div class="backup-block">
+            <strong>自動清除</strong>
+            <span class="field-help">開啟系統時，會自動清除「超過下列天數」的舊排班與可上班時間。預設 365 天（一年）；填 0 ＝ 不自動清除。</span>
+            <div class="backup-btns">
+              <label class="field" style="max-width:220px;margin:0"><span>超過幾天自動清除</span><input class="input" type="number" min="0" step="1" id="autoPurgeInput"></label>
+              <button type="button" class="secondary-btn" id="saveAutoPurgeBtn">儲存</button>
+            </div>
+          </div>
+          <div class="backup-block">
+            <strong>立即清除</strong>
+            <span class="field-help">馬上清除 180 天前的舊排班與可上班時間（不影響員工、工作、固定班次）。</span>
+            <div class="backup-btns">
+              <button type="button" class="ghost-btn" id="purgeNowBtn">🧹 立即清除 180 天前資料</button>
+            </div>
+          </div>
+          <hr class="soft-divider" />
+          <h3>清空所有資料</h3>
+          <p>清空所有資料（員工、工作、班次、可上班時間等）。此動作無法復原，建議先用上方「完整備份」匯出保存。</p>
+          <button type="button" class="ghost-btn" id="resetDemoBtn">清空所有資料</button>
+        </div>
+
+        <div class="panel help-card settings-section hidden" data-sec="help">
+          <div class="help-head">
+            <div>
+              <h3>使用說明 / 快速上手</h3>
+              <p>點各段標題可展開。忘記怎麼操作時可隨時回這裡查。</p>
+            </div>
+            <button type="button" class="secondary-btn" id="printGuideBtn">🖨 列印／存 PDF</button>
+          </div>
+
+          <details class="help-sec" open>
+            <summary>🚀 第一次設定（只做一次）</summary>
+            <ol>
+              <li><b>設定與維護 → 店家設定</b>：填店名、營業時間、休息扣薪時段。</li>
+              <li><b>工作項目</b>：建立工作（內場、外場…），設顏色、是否平日/假日限定、要不要扣休息。</li>
+              <li><b>員工管理</b>：新增員工——編號、身份（外籍學生會提醒工時上限）、時薪、可做的工作、主要負責的平日/假日工作、勞健保備註。</li>
+              <li><b>設定與維護 → 國定假日</b>：一鍵匯入台灣國定假日；<b>特定休息日</b>設定公休。</li>
+              <li><b>排班管理 → 固定班次設定</b>：把「每週固定的樣子」建好（週一～週日與國定假日各自的班），之後可一鍵套用。</li>
+            </ol>
+          </details>
+
+          <details class="help-sec">
+            <summary>📅 每週怎麼排班</summary>
+            <ol>
+              <li><b>可上班時間 → 開放設定</b>：按「開放填下週」或「開放填下個月」讓員工填。</li>
+              <li>員工填完後回 <b>排班管理</b>：按「<b>套用固定班次</b>」自動照模板排好、能排的人自動補上（再按一次只補空缺、不會重複）。</li>
+              <li>要微調：在空白時段<b>上下拖曳框選</b>時段新增班次；班次色塊右上角點「<b>⇄</b>」可直接換人。想沿用上週按「複製上週班表」。</li>
+              <li>排好後按「<b>公布本週</b>」，員工才看得到（公布前是灰色斜紋草稿）。需要紙本按「列印週班表」。</li>
+            </ol>
+            <p class="help-tip">💡 <b>總覽</b>會提醒「有班次沒排人 / 沒公布」，點提醒可直接跳到那一天。</p>
+          </details>
+
+          <details class="help-sec">
+            <summary>🤖 套用固定班次：自動帶人怎麼挑</summary>
+            <p class="help-lead">按「套用固定班次」時，系統會照當天的固定班次，自動把<b>最適合的人</b>帶進去；找不到合適的人就先留「<b>待指派</b>」。挑人分兩關 —— 先看「能不能排」，再看「誰優先」。</p>
+            <p class="help-subtitle">第一關 · 能不能排（要全部符合才會被自動帶入）</p>
+            <ul>
+              <li>會做這個工作</li>
+              <li>有填可上班時間，且當天不是「不可上班」</li>
+              <li>班次時間落在他可上班的時段內</li>
+              <li>當天沒有其他時間重疊的班次</li>
+              <li>排進去不會超過每週工時上限</li>
+            </ul>
+            <p class="help-note-inline">☝ 有任何一項不符，這個人這次就不會被自動帶入。</p>
+            <p class="help-subtitle">第二關 · 誰優先（符合的人裡，優先度高的先排）</p>
+            <table class="help-table">
+              <thead><tr><th>條件</th><th>優先度</th></tr></thead>
+              <tbody>
+                <tr><td>當天的「<b>主要負責人</b>」（平日看主要平日、假日看主要假日）</td><td>★★★ 最高</td></tr>
+                <tr><td>會做這個工作</td><td>★★ 高</td></tr>
+                <tr><td>本週<b>剩餘工時較多</b>（用來平衡大家工時）</td><td>★ 中</td></tr>
+                <tr><td>有填可上班時間</td><td>· 低</td></tr>
+              </tbody>
+            </table>
+            <p class="help-subtitle">重點</p>
+            <ul>
+              <li>設為「<b>主要負責</b>」的人，只要符合資格，幾乎一定被排第一 —— 這就是「自動帶入負責人」。</li>
+              <li>同一時段有<b>多位</b>主要負責人時，本週<b>排得比較少的先排</b>，自動平衡工時。</li>
+              <li>主要負責人若<b>沒填可上班／當天不可／時段不符／會超時</b>，就不會被帶入，可能留白或由次順位頂上。</li>
+              <li>補不滿會提示「仍有 N 個待指派」；等員工更新可上班時間後<b>再按一次</b>就自動補上，<b>不會重複</b>。想手動改，點班次右上角「<b>⇄</b>」直接換人。</li>
+            </ul>
+          </details>
+
+          <details class="help-sec">
+            <summary>🔄 開放員工填可上班時間</summary>
+            <ul>
+              <li>用「開放填下週 / 下個月」快捷，日期會自動帶好，確認即可儲存。</li>
+              <li>勾「預設全部員工整天可上班」→ 只需標記少數請假的人，其餘視為可上班。</li>
+              <li><b>檢視與代填</b>：主管也能用日檢視／員工檢視，直接幫員工快速勾選。</li>
+            </ul>
+          </details>
+
+          <details class="help-sec">
+            <summary>⏱ 月底對帳與下載報表</summary>
+            <ul>
+              <li><b>工時統計</b>：可選週或月、依工時排序、篩選身份、搜尋員工，點某人展開明細。</li>
+              <li>拿打卡表核對：填實際上下班、打勾確認（打卡對照）。</li>
+              <li>看人力成本（時薪×工時），按「下載 CSV」給會計。</li>
+            </ul>
+          </details>
+
+          <details class="help-sec">
+            <summary>📱 員工怎麼用（可截圖給員工）</summary>
+            <ul>
+              <li>打開員工班表系統，輸入<b>員工編號</b>登入。</li>
+              <li><b>我的班表</b>：看已公布班表、一鍵「加入行事曆」（iPhone／Google）、班表更新有橫幅通知。</li>
+              <li><b>填寫可上班時間</b>：月曆勾選、可「快速設定整週」、標記「整天不可上班」。</li>
+            </ul>
+          </details>
+
+          <details class="help-sec">
+            <summary>💾 備份與資料清理</summary>
+            <ul>
+              <li>平時定期用「<b>完整備份</b>」匯出一份保存；換裝置或搬站可「還原完整備份」。</li>
+              <li>「立即清除 180 天前資料」可手動清舊資料；超過 365 天會自動清（可調）。</li>
+              <li>清理只影響舊班次與可上班時間，<b>員工、工作、固定班次不會被清</b>。</li>
+            </ul>
+          </details>
+
+          <details class="help-sec">
+            <summary>❓ 常見問題</summary>
+            <ul>
+              <li><b>草稿與公布差在哪？</b>灰色斜紋＝草稿，只有主管看得到；按「公布本週」後員工才看得到。</li>
+              <li><b>假日怎麼算？</b>週六、日與國定假日算假日，套用假日的工作與固定班次。</li>
+              <li><b>外籍學生工時？</b>系統會依每週上限提醒超時，但仍可排（保留彈性）。</li>
+              <li><b>套用固定班次會重複嗎？</b>不會。再按只補未指派的空缺，不會多加班次。</li>
+              <li><b>右上角狀態燈？</b>●已同步、◌儲存中、◍本機模式——確認資料有沒有存上雲端。</li>
+            </ul>
+          </details>
+        </div>
+      </section>
+</main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="fixedModalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div><h3>固定班次設定</h3><p>設定每個星期各工作固定需要幾人；回排班管理按「套用固定班次」即可自動建立班次。</p></div>
+        <button class="icon-btn" id="fixedModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="fs-actions">
+          <button type="button" class="ghost-btn small-btn" id="copyDemandBtn">複製到其他星期</button>
+          <button type="button" class="secondary-btn small-btn" id="addDemandBtn">＋ 新增</button>
+        </div>
+        <div class="seg demand-weektabs" id="demandWeekTabs"></div>
+        <div id="demandList" class="demand-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div><h3 id="modalTitle"></h3><p id="modalSubtitle"></p></div>
+        <button class="icon-btn" id="modalCloseBtn">✕</button>
+      </div>
+      <form id="modalForm" class="modal-body"></form>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cloud.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

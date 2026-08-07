@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#b94b2f" />
+  <title>蔡叔叔比薩屋｜員工班表系統</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.svg" />
+  <link rel="icon" href="icons/icon-192.svg" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body class="staff-page">
+  <main class="staff-page-main">
+    <header class="staff-brandbar">
+      <div class="brand">
+        <div class="brand-mark" id="staffBrandMark"><img src="icons/icon-192.svg" alt="蔡叔叔比薩屋" /></div>
+        <div>
+          <strong id="staffBrandName">蔡叔叔比薩屋｜員工班表系統</strong>
+        </div>
+      </div>
+      <span id="syncStatus" class="sync-badge init">◌ 初始化</span>
+    </header>
+
+    <section class="staff-shell">
+      <div class="staff-login-card" id="staffLoginCard">
+        <div class="brand-mark large-mark"><img src="icons/icon-192.svg" alt="蔡叔叔比薩屋" /></div>
+        <span class="eyebrow">Employee Portal</span>
+        <h1>查看班表與填寫可上班時間</h1>
+        <p>輸入員工編號與 PIN 碼即可進入。</p>
+        <label class="field">
+          <span>員工編號</span>
+          <input id="staffNoInput" class="input big-input" autocomplete="off" inputmode="text" />
+        </label>
+        <label class="field">
+          <span>PIN碼（4位數）</span>
+          <input id="staffPinInput" class="input big-input" type="password" autocomplete="off" inputmode="numeric" maxlength="4"/>
+        </label>
+        <button id="staffLoginBtn" class="primary-btn full">進入員工專區</button>
+        <div id="staffLoginError" class="form-error"></div>
+      </div>
+
+      <div id="staffPortal" class="staff-portal hidden">
+        <div class="staff-portal-head">
+          <div>
+            <h1 id="staffWelcome"></h1>
+          </div>
+          <button class="ghost-btn" id="staffLogoutBtn">登出</button>
+        </div>
+
+        <div class="publish-update-banner hidden" id="publishUpdateBanner"></div>
+        <div class="next-shift-card" id="nextShiftCard"></div>
+        <div class="availability-window-banner" id="availabilityWindowBanner"></div>
+
+        <div class="staff-tabs">
+          <button class="staff-tab active" data-staff-tab="mySchedule">我的班表</button>
+          <button class="staff-tab" data-staff-tab="availability">填寫可上班時間</button>
+        </div>
+
+        <div class="staff-tab-panel active" id="mySchedulePanel">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h3>我的班表</h3><p>顯示即將到來與已結束（前後約三個月），含備註。</p></div>
+              <button class="ghost-btn" id="addAllCalBtn">📅 加入行事曆</button>
+            </div>
+            <div id="staffShiftList" class="stack-list"></div>
+          </div>
+        </div>
+
+        <div class="staff-tab-panel" id="availabilityPanel">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>填寫可上班時間</h3>
+                <p>點日曆上的日期，填那天可以上班的時間；每週時間都差不多的話，用月曆下方「快速設定」一次套用整個月。</p>
+              </div>
+            </div>
+
+            <div class="avail-disclaimer">※ 填寫可上班時間僅為調查意願，實際排班依最後公布的班表為準。</div>
+
+            <div id="availabilityClosedMessage" class="closed-message hidden"></div>
+
+            <div id="availabilityCalendarArea">
+              <div class="employee-calendar-toolbar">
+                <button class="icon-btn" id="staffPrevMonthBtn">‹</button>
+                <strong id="staffCalendarMonthLabel"></strong>
+                <button class="icon-btn" id="staffNextMonthBtn">›</button>
+              </div>
+              <div class="weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+              <div id="staffAvailabilityCalendar" class="employee-calendar-grid"></div>
+
+              <div class="calendar-legend">
+                <span><i class="legend-dot available"></i>可上班</span>
+                <span><i class="legend-dot unavailable"></i>不可排班</span>
+                <span><i class="legend-dot pending"></i>尚未填寫</span>
+              </div>
+
+              <!-- 快速設定：移到月曆下方、常駐；每週時間固定的人先用這個一次套用整月 -->
+              <div class="quick-week" id="quickWeekBlock">
+                <div class="qw-head"><span class="qw-star">⭐</span><strong>快速設定・每週時間都差不多的人先用這個</strong></div>
+                <div class="qw-sentence"><span>每週</span><div class="quick-week-days" id="quickWeekDays"></div><span>可以上班</span></div>
+                <div class="quick-week-time time-pair">
+                  <label class="field"><span>最早可上班</span><select id="quickWeekStart" class="select"></select></label>
+                  <label class="field"><span>最晚可下班</span><select id="quickWeekEnd" class="select"></select></label>
+                </div>
+                <label class="seg2-toggle"><input type="checkbox" id="quickWeekSeg2Toggle"> 加第二時段（例如早班＋晚班）</label>
+                <div class="quick-week-time time-pair hidden" id="quickWeekSeg2Row">
+                  <label class="field"><span>第二段・最早可上班</span><select id="quickWeekStart2" class="select"></select></label>
+                  <label class="field"><span>第二段・最晚可下班</span><select id="quickWeekEnd2" class="select"></select></label>
+                </div>
+                <p class="qw-preview" id="quickWeekPreview"></p>
+                <div class="qw-actions"><button class="qw-btn-yes" id="quickWeekAvailable">一次套用（每週）為可上班</button></div>
+                <button type="button" class="qw-link-no" id="quickWeekUnavailable">改設為（每週）整天不可上班</button>
+              </div>
+            </div>
+
+            <!-- 逐日編輯：點日期才彈出的聚焦小卡（手機置底、桌機置中） -->
+            <div class="day-sheet-backdrop hidden" id="daySheetBackdrop">
+              <div class="day-sheet" id="daySheet" role="dialog" aria-modal="true">
+                <button type="button" class="day-sheet-close" id="daySheetClose" aria-label="關閉">✕</button>
+                <div class="selected-day-editor" id="selectedDayEditor">
+                  <div class="selected-day-head">
+                    <div>
+                      <span class="eyebrow">這一天</span>
+                      <h3 id="availabilitySelectedDateTitle"></h3>
+                    </div>
+                    <span id="availabilityDayStatus" class="badge"></span>
+                  </div>
+                  <div class="quick-day-actions">
+                    <button class="quick-yes" id="quickDayYes">✓ 整天可以</button>
+                    <button class="quick-no" id="quickDayNo">✗ 不能上班</button>
+                  </div>
+                  <div class="day-detail">
+                    <p class="day-detail-title">或指定時段（只設這一天）</p>
+                    <div class="time-pair">
+                      <label class="field"><span>最早可上班</span><select id="availabilityStart" class="select"></select></label>
+                      <label class="field"><span>最晚可下班</span><select id="availabilityEnd" class="select"></select></label>
+                    </div>
+                    <label class="seg2-toggle"><input type="checkbox" id="availabilitySeg2Toggle"> 加第二時段（例如早班＋晚班）</label>
+                    <div class="time-pair hidden" id="availabilitySeg2Row">
+                      <label class="field"><span>第二段・最早可上班</span><select id="availabilityStart2" class="select"></select></label>
+                      <label class="field"><span>第二段・最晚可下班</span><select id="availabilityEnd2" class="select"></select></label>
+                    </div>
+                    <button id="saveAvailabilityBtn" class="primary-btn">儲存這一天</button>
+                  </div>
+                  <div id="availabilitySaved" class="success-note"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cloud.js"></script>
+  <script src="js/staff.js"></script>
+</body>
+</html>
