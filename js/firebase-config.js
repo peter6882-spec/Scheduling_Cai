@@ -9,11 +9,11 @@
  *  5. 存檔、重新整理網站即可，其他檔案都不用動
  * =================================================================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyC6kswvrTYAmhV7B-DVcfbBsAguBSgIme8",
-  authDomain: "scheduling-cai-510cc.firebaseapp.com",
-  projectId: "scheduling-cai-510cc",
-  storageBucket: "scheduling-cai-510cc.firebasestorage.app",
-  messagingSenderId: "730732562994",
-  appId: "1:730732562994:web:2a9fce716b74122dbd0a2b"
+  apiKey: "AIzaSyAM2LscZBh9kW-oocrFT5YuZPJc0NKHW9s",
+  authDomain: "scheduling-cai.firebaseapp.com",
+  projectId: "scheduling-cai",
+  storageBucket: "scheduling-cai.firebasestorage.app",
+  messagingSenderId: "177249470476",
+  appId: "1:177249470476:web:30b4745b0a13e0c286c629"
 };
 /* ⬆⬆⬆  把上面 6 個引號中間填入你的值即可（沒填就會用「本機暫存」模式） ⬆⬆⬆ */
