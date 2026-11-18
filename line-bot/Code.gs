@@ -17,11 +17,11 @@
 // ---- 一般設定(不是秘密，可以直接改) ----
 const CONFIG = {
   // Firebase：與網站 js/firebase-config.js 相同(這兩個值本來就公開在網頁裡)
-  FIREBASE_API_KEY: "AIzaSyAM2LscZBh9kW-oocrFT5YuZPJc0NKHW9s",
-  FIREBASE_PROJECT_ID: "scheduling-cai",
+  FIREBASE_API_KEY: "AIzaSyC6kswvrTYAmhV7B-DVcfbBsAguBSgIme8",
+  FIREBASE_PROJECT_ID: "scheduling-cai-510cc",
   COLLECTION: "scheduler",
   // 員工頁「今日打烊剩餘」頁籤的網址(搬家後改這裡)
-  STAFF_URL: "https://jane3377.github.io/Scheduling_Cai/index.html?go=stock",
+  STAFF_URL: "https://peter6882-spec.github.io/Scheduling_Cai/index.html?go=stock",
   TIMEZONE: "Asia/Taipei",
 };
 
