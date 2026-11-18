@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="format-detection" content="telephone=no,date=no,address=no,email=no" />
+  <meta name="theme-color" content="#241f1c" />
+  <title>蔡叔叔比薩屋｜備料預估管理</title>
+  <!-- 專屬 manifest：加入主畫面會開「備料預估管理」本頁，而非排班前台 -->
+  <link rel="manifest" href="manifest-chicken.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="備料預估管理" />
+  <link rel="apple-touch-icon" href="icons/icon_prep_apple_180.png" />
+  <link rel="icon" href="icons/icon_prep_192.png" />
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    body { background: #f6f3f0; margin: 0; }
+    /* 頂部黑底：滿版寬，不留邊白 */
+    .chk-brandbar { background: #241f1c; width: 100%; }
+    .chk-brandbar-inner { max-width: 900px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .chk-brandbar .brand strong { color: #fff; }
+    .chk-wrap { max-width: 900px; margin: 0 auto; padding: 0 18px 48px; }
+    .ck-toolbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin: 18px 0 2px; flex-wrap: wrap; }
+    .ck-toolbar h2 { margin: 0; font-size: 20px; }
+    .ck-toolbar p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .ck-btns { display: flex; gap: 8px; }
+    /* 主頁小提示一行(點擊開記錄叫貨) */
+    .ck-hint { display: block; width: 100%; text-align: left; margin: 14px 0 2px; padding: 12px 15px; border: 1px solid #e7cdbf; border-radius: 12px; background: linear-gradient(135deg, #fff 0%, #fbeee7 100%); color: var(--ink); font-size: 14px; cursor: pointer; }
+    .ck-hint b { font-weight: 800; }
+    .ck-hint .ck-leg { color: #8f3521; } .ck-hint .ck-fil { color: #2f7d52; } .ck-hint .ck-wing { color: #b7791f; }
+    /* 記錄叫貨：叫貨量輸入為主角 */
+    .ord-lbl { display: block; font-size: 15px; font-weight: 700; margin: 6px 0 7px; }
+    .ck-num3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .ord-cell { display: grid; gap: 6px; }
+    .ord-cell > span { font-size: 14px; font-weight: 700; }
+    .ord-cell input { width: 100%; font-size: 30px; text-align: center; font-weight: 800; padding: 15px 6px; border: 2px solid #e2d8d0; border-radius: 12px; background: #fff; color: var(--ink); }
+    .ord-step { color: var(--brand-dark); font-weight: 900; margin-right: 2px; }
+    .ord-edit { font-size: 12px; font-weight: 700; color: var(--brand-dark); margin-left: 4px; }
+    .ord-flow { text-align: center; font-size: 12.5px; color: var(--muted); font-weight: 700; margin: 16px 0 10px; }
+    .stock-line { font-size: 13.5px; font-weight: 700; color: #4a5668; background: #eef2f7; border: 1px solid #d8e0ea; border-radius: 10px; padding: 9px 12px; margin: 2px 0 12px; }
+    .stock-line .ck-leg { color: #8f3521; } .stock-line .ck-fil { color: #2f7d52; } .stock-line .ck-wing { color: #b7791f; }
+    /* 主頁置頂：最新盤點庫存 */
+    .ck-stock-top { display: block; width: 100%; margin: 14px 0 0; padding: 11px 15px; border: 1px solid #d8e0ea; border-radius: 12px; background: linear-gradient(135deg, #fff 0%, #eef2f7 100%); color: #3a4452; font-size: 14px; font-weight: 700; }
+    .ck-stock-top b { font-weight: 900; } .ck-stock-top .big { font-size: 16px; }
+    .ck-stock-top .ck-leg { color: #8f3521; } .ck-stock-top .ck-fil { color: #2f7d52; } .ck-stock-top .ck-wing { color: #b7791f; }
+    .ck-stock-top small { color: var(--muted); font-weight: 600; }
+    /* ② 實際下單公斤：醒目可改 */
+    .ord-cell.kg > span b { color: var(--brand-dark); }
+    .kg-pcs { display: block; text-align: center; font-size: 13px; color: #5a524c; font-weight: 700; margin-top: 4px; line-height: 1.35; }
+    .kg-pcs b { font-size: 15px; color: var(--ink); } .kg-pcs em { display: block; font-style: normal; color: #b7791f; } .kg-pcs em.lack { color: var(--danger); }
+    .ck-adj { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+    .ord-cell.kg input { border-color: #d9a689; background: #fffdfb; box-shadow: 0 0 0 3px rgba(217,166,137,.14); }
+    /* 將記錄 */
+    .will-save { margin-top: 14px; border: 1px solid #cfe6d7; border-radius: 12px; background: #f3faf5; padding: 11px 13px; }
+    .will-save .ws-line { font-size: 14.5px; line-height: 1.7; color: var(--ink); }
+    .will-save .ws-line b { font-weight: 900; }
+    .will-save .ws-note { font-size: 11.5px; color: #6f8a79; margin-top: 5px; }
+    .ord-mini { font-size: 11.5px; font-weight: 600; color: var(--muted); margin-left: 4px; }
+    /* 參考區：系統預估(依據)＋上次同日型的實際叫貨，只供參考 */
+    .sug { border: 1px solid var(--line); border-radius: 12px; background: #faf7f4; padding: 10px 13px; margin: 14px 0 0; }
+    .sug-title { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .sug-empty { font-size: 13px; color: var(--muted); padding: 6px 2px; }
+    .sug-row2 { display: flex; align-items: center; gap: 8px; padding: 9px 0; font-size: 14px; }
+    #lastRow, #deductRow { border-top: 1px dashed #e8ddd4; }
+    .sug-tag2.deduct { color: var(--brand-dark); }
+    .sug-tag2 { font-weight: 800; white-space: nowrap; font-size: 13px; color: var(--ink); }
+    .sug-pill { font-size: 10px; background: #e7f1ea; color: #2f7d52; border-radius: 6px; padding: 1px 6px; margin-left: 3px; font-weight: 800; }
+    .sug-nums2 { margin-left: auto; font-size: 14.5px; font-weight: 800; white-space: nowrap; }
+    .sug-nums2 i { font-style: normal; color: var(--muted); font-size: 11px; font-weight: 700; margin-right: 1px; }
+    .sug-nums2 .ck-leg { color: #8f3521; } .sug-nums2 .ck-fil { color: #2f7d52; } .sug-nums2 .ck-wing { color: #b7791f; }
+    .sug-fill2 { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 13px; font-weight: 800; color: var(--brand-dark); font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+    .sug-setlink { display: flex; align-items: center; width: 100%; margin-top: 9px; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; font-size: 12.5px; color: var(--muted); font-weight: 700; cursor: pointer; }
+    .sug-setlink .ar { margin-left: auto; color: var(--muted); }
+    /* 多使用日：本批合計要叫(系統幫你加總，不用自己算) */
+    .batch-block { border: 1px solid #e7cdbf; border-radius: 12px; background: linear-gradient(135deg,#fff 0%,#fdf6f1 100%); padding: 11px 13px; margin: 12px 0 0; }
+    .batch-block .bb-head { font-size: 13px; font-weight: 800; color: var(--brand-dark); margin-bottom: 6px; }
+    .batch-block .bb-row { display: flex; align-items: center; font-size: 14px; padding: 7px 0; border-top: 1px dashed #ecd7c9; }
+    .batch-block .bb-row:first-of-type { border-top: 0; }
+    .batch-block .bb-d { font-weight: 700; color: #5a524c; }
+    .batch-block .bb-n { margin-left: auto; font-weight: 800; white-space: nowrap; }
+    .batch-block .bb-n i { font-style: normal; color: var(--muted); font-size: 11px; font-weight: 700; margin-right: 1px; }
+    .batch-block .bb-n .ck-leg { color: #8f3521; } .batch-block .bb-n .ck-fil { color: #2f7d52; } .batch-block .bb-n .ck-wing { color: #b7791f; }
+    .batch-block .bb-sum { border-top: 2px solid #e7cdbf; }
+    .batch-block .bb-sum .bb-d { font-weight: 900; color: var(--ink); }
+    .batch-block .bb-sum .bb-n { font-size: 15px; }
+    .batch-block .bb-deduct .bb-d { color: var(--brand-dark); font-weight: 900; }
+    .batch-block .bb-deduct .bb-n { font-size: 15.5px; }
+    .batch-block .bb-stock { font-size: 11.5px; color: var(--muted); text-align: right; margin-top: 2px; }
+    .batch-block .bb-note { font-size: 11.5px; color: #8a7f77; line-height: 1.5; margin-top: 7px; border-top: 1px dashed #ecd7c9; padding-top: 7px; }
+    /* 推估設定彈窗 */
+    .ps-row { padding: 13px 2px; border-bottom: 1px solid #f0ebe7; }
+    .ps-row:last-of-type { border-bottom: 0; }
+    .ps-k { font-size: 15px; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+    .ps-sel { margin-left: auto; border: 1.5px solid #d9a689; border-radius: 10px; background: #fffdfb; padding: 8px 12px; font: inherit; font-size: 16px; font-weight: 800; color: var(--ink); min-width: 100px; text-align: center; }
+    .ps-d { font-size: 12px; color: var(--muted); margin: 6px 0 0 2px; line-height: 1.5; }
+    /* 盤點填寫紀錄表 */
+    .rec-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .rec-tbl { border-collapse: collapse; width: 100%; min-width: 560px; }
+    .rec-tbl th, .rec-tbl td { padding: 11px 9px; font-size: 15px; text-align: center; white-space: nowrap; border-bottom: 1px solid #f1ece6; }
+    .rec-tbl thead tr.grp th { background: #efeae4; color: #5a524c; font-weight: 900; font-size: 14px; }
+    .rec-tbl thead tr.sub th { background: #f7f2ec; color: var(--muted); font-weight: 800; font-size: 13px; padding: 6px 9px; }
+    .rec-tbl td.rd { text-align: left; font-weight: 800; color: var(--ink); } .rec-tbl td.rw { text-align: left; } .rec-tbl td.rw b { color: var(--ink); } .rec-tbl td.rt { color: var(--muted); font-size: 12.5px; }
+    .rec-tbl .sep { border-left: 2px solid var(--line); }
+    .rec-tbl .rl { color: #8f3521; font-weight: 800; } .rec-tbl .rf { color: #2f7d52; font-weight: 800; } .rec-tbl .rwg { color: #b7791f; font-weight: 800; } .rec-tbl .rp { color: #9a4a1a; font-weight: 800; }
+    .rec-month { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 4px 0 12px; }
+    .rec-month b { font-size: 18px; font-weight: 900; color: var(--ink); min-width: 120px; text-align: center; }
+    .rec-month .icon-btn:disabled { opacity: .35; cursor: default; }
+    .rec-cards { display: none; }
+    #recordsMsg:empty { display: none; }
+    @media (max-width:720px) {
+      .rec-wrap { display: none; } .rec-cards { display: grid; gap: 10px; }
+      .rc-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+      .rc-h { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+      .rc-d { font-size: 17px; font-weight: 900; color: var(--ink); }
+      .rc-h .rec-edit { margin-left: auto; font-size: 14px; font-weight: 800; }
+      .rc-sec + .rc-sec { border-top: 1px dashed #ece4dd; margin-top: 8px; padding-top: 8px; }
+      .rc-who { font-size: 14px; font-weight: 800; color: #5a524c; margin-bottom: 6px; } .rc-who span { font-weight: 600; color: var(--muted); font-size: 13px; }
+      .rc-nums { display: flex; gap: 8px; flex-wrap: wrap; }
+      .rc-n { flex: 1; min-width: 56px; background: #faf7f4; border-radius: 10px; padding: 6px 4px; text-align: center; }
+      .rc-n i { display: block; font-style: normal; font-size: 12.5px; color: var(--muted); font-weight: 700; }
+      .rc-n b { font-size: 21px; font-weight: 900; color: #9a4a1a; }
+      .rc-n.rl b { color: #8f3521; } .rc-n.rf b { color: #2f7d52; } .rc-n.rwg b { color: #b7791f; }
+      .rc-none { font-size: 14px; color: var(--muted); padding: 4px 2px; }
+    }
+    .rec-empty { font-size: 13.5px; color: var(--muted); padding: 24px 2px; text-align: center; }
+    /* 每日提醒彈窗 */
+    .rm-task { border: 1.5px solid var(--line); border-radius: 14px; padding: 13px; margin-bottom: 11px; }
+    .rm-task.order { border-color: #ead7c9; background: #fffdfb; }
+    .rm-th { display: flex; align-items: center; margin-bottom: 3px; }
+    .rm-th .rm-tt { font-size: 16px; font-weight: 900; color: #2a2420; }
+    .rm-pill { margin-left: auto; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 3px 10px; }
+    .rm-pill.wait { color: #9a4a1a; background: #fbe9db; }
+    .rm-sub { font-size: 12.5px; color: var(--muted); font-weight: 700; margin-bottom: 10px; line-height: 1.5; } .rm-sub b { color: var(--ink); }
+    .rm-calc { background: #faf7f4; border: 1px solid #efe6de; border-radius: 11px; padding: 3px 12px; margin-bottom: 10px; }
+    .rc-row { display: flex; align-items: center; font-size: 13px; padding: 7px 0; } .rc-row + .rc-row { border-top: 1px dashed #e8ddd4; }
+    .rc-row .rc-k { color: var(--muted); font-weight: 700; } .rc-row .rc-v { margin-left: auto; font-weight: 800; white-space: nowrap; }
+    .rc-row .rc-v i { font-style: normal; color: #b3a89f; font-size: 11px; margin-right: 1px; }
+    .rc-row.stk .rc-v { color: #2a5aa0; } .rc-row.need { border-top: 2px solid #e7cdbf; } .rc-row.need .rc-k { color: var(--brand-dark); font-weight: 900; } .rc-row.need .rc-v { font-size: 14.5px; }
+    .rc-row.kg .rc-k { color: var(--brand-dark); font-weight: 800; }
+    .rm-btn { display: block; width: 100%; text-align: center; background: var(--brand); color: #fff; border: 0; border-radius: 11px; padding: 12px; font-weight: 900; font-size: 15px; cursor: pointer; }
+    .rm-btn.ghost { background: #fff; border: 1.5px solid #d9cfc7; color: #5a524c; }
+    .rm-later { display: block; width: 100%; text-align: center; background: none; border: 0; color: var(--muted); font-weight: 800; font-size: 13.5px; padding: 10px; margin-top: 2px; cursor: pointer; }
+    /* 月曆切換(使用月曆／叫貨月曆) */
+    .ck-calswitch { display: flex; gap: 7px; background: #efeae4; border-radius: 12px; padding: 5px; margin: 0 0 8px; max-width: 360px; }
+    .ck-calswitch button { flex: 1; border: 0; border-radius: 9px; padding: 9px 6px; font-size: 14px; font-weight: 800; color: var(--muted); background: transparent; cursor: pointer; }
+    .ck-calswitch button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .ck-caltitle { font-size: 12.5px; color: var(--muted); margin: 0 2px 12px; }
+    /* 叫貨月曆：下單日狀態 */
+    .ck-ordcell .ck-po { display: block; font-size: 11px; font-weight: 800; border-radius: 7px; padding: 3px 4px; margin-top: 5px; line-height: 1.25; }
+    .ck-ordcell .ck-po i { display: block; font-style: normal; font-size: 10px; font-weight: 800; margin-top: 1px; }
+    .ck-po.st-arr { color: #1f7a46; background: #e3f3ea; } .ck-po.st-sent { color: #2a5aa0; background: #e6eefa; } .ck-po.st-wait { color: #9a4a1a; background: #fbe9db; }
+    .ck-po.ck-posugg { color: #9a4a1a; background: #fff; border: 1.5px dashed #e0a884; }
+    #ordHeadSub.ord-warn { color: #8a5a10; font-weight: 800; }
+    .oref-row .oref-tag { flex: 1 1 0; min-width: 0; white-space: normal; }
+    .oref-why { display: block; font-size: 12.5px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+    .ord-deliver { font-size: 14.5px; color: #5a524c; background: #faf7f4; border-radius: 10px; padding: 8px 11px; margin-top: 4px; line-height: 1.6; } .ord-deliver b { color: var(--ink); }
+    .tc-nums b small { font-size: 13px; font-weight: 800; color: var(--muted); margin-left: 2px; }
+    .tc-by { font-size: 14px; font-weight: 700; color: #2f5d43; background: #f3faf5; border: 1px solid #cfe6d7; border-radius: 10px; padding: 8px 11px; margin-top: 8px; }
+    .ck-by { display: block; font-size: 12px; font-weight: 700; color: var(--muted); }
+    .ck-bf-banner { background: #eef4ff; border: 1px solid #c9d8f2; color: #2a4a80; border-radius: 12px; padding: 10px 13px; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .ck-ordcell .ck-pocan.ck-bf { color: #2a4a80; }
+    .ck-supoff { display: block; font-size: 10px; font-weight: 800; color: #8a5a10; background: #fff3d6; border-radius: 6px; padding: 1px 3px; margin-top: 3px; width: fit-content; max-width: 100%; overflow: hidden; white-space: nowrap; letter-spacing: -0.3px; }
+    .pin-hint { margin-top: 14px; font-size: 13px; color: var(--muted); }
+    .ck-ro-banner { background: #eef3fb; border: 1.5px solid #c9d8ef; color: #2c4a73; border-radius: 12px; padding: 10px 14px; font-size: 15px; font-weight: 800; margin-bottom: 14px; }
+    body.ck-readonly .edit-only { display: none !important; }
+    /* 目前登入者＋登出：手機在上方列右邊(點開才有登出)；平板／電腦在左側選單最下面(直接顯示登出) */
+    .ck-user { position: relative; flex: 0 0 auto; order: 3; }
+    .cu-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.1); border: 0; border-radius: 999px; padding: 6px 11px; color: #fff; font-size: 14px; cursor: pointer; max-width: 150px; }
+    .cu-btn b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; }
+    .cu-btn small { display: none; } .cu-caret { font-style: normal; font-size: 11px; opacity: .8; }
+    .cu-out { display: none; position: absolute; right: 0; top: calc(100% + 6px); background: #fff; color: var(--brand-dark); border: 1.5px solid #ecdfd4; border-radius: 12px; padding: 11px 22px; font-size: 16px; font-weight: 800; box-shadow: 0 6px 18px rgba(0,0,0,.18); cursor: pointer; white-space: nowrap; z-index: 40; }
+    .ck-user.open .cu-out { display: block; }
+    @media (min-width:721px) {
+      .ck-user { order: 0; margin-top: auto; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(255,255,255,.07); border-radius: 12px; padding: 10px 10px 10px 12px; }
+      .app-sidebar .ck-user + .sync-badge { margin-top: 0; }
+      .cu-btn { flex-direction: column; align-items: flex-start; gap: 1px; background: none; padding: 0; cursor: default; max-width: 130px; font-size: 15px; }
+      .cu-btn .cu-ic { display: none; } .cu-btn b::before { content: "👤 "; }
+      .cu-btn small { display: block; color: var(--nav-ink); opacity: .85; font-size: 12.5px; } .cu-caret { display: none; }
+      .cu-out, .ck-user.open .cu-out { display: block; position: static; padding: 7px 12px; font-size: 14px; box-shadow: none; border-radius: 10px; }
+    }
+    .ck-term { display: block; font-size: 10px; font-weight: 800; color: #2f6b3a; background: #e5f2e1; border-radius: 6px; padding: 1px 3px; margin-top: 2px; width: fit-content; max-width: 100%; overflow: hidden; white-space: nowrap; }
+    .ck-term .tm-ic { display: none; font-style: normal; margin-right: 2px; }
+    @media (min-width:721px) { .ck-term { font-size: 12.5px; padding: 1px 6px; } .ck-term .tm-ic { display: inline; } }
+    .tm-grp + .tm-grp { margin-top: 12px; }
+    .tm-gh { font-weight: 800; font-size: 14.5px; color: var(--brand-dark); margin-bottom: 6px; }
+    .tm-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .tm-opt { display: flex; align-items: center; gap: 7px; border: 1.5px solid #ecdfd4; border-radius: 10px; padding: 9px 10px; font-size: 16px; font-weight: 700; cursor: pointer; background: #fff; }
+    .tm-opt input { width: 19px; height: 19px; accent-color: #2f6b3a; }
+    .tm-opt:has(input:checked) { border-color: #9cc59a; background: #f1f8ef; }
+    @media (min-width:721px) { .ck-supoff { font-size: 13px; padding: 2px 6px; letter-spacing: 0; } .ck-ordcell .ck-pocan { font-size: 12.5px; } }
+    .employee-cal-day.ck-rest.ck-ordcell { cursor: pointer; }
+    .ck-ordcell .ck-pocan { display: block; font-size: 10px; font-weight: 700; color: var(--muted); margin-top: 5px; }
+    /* 叫貨單(兩段式：批發商／到貨日／使用日＋逐日表＋狀態) */
+    #orderBackdrop .modal-head .icon-btn { align-self: flex-start; flex: 0 0 auto; }
+    .ord-status { align-self: flex-start; flex: 0 0 auto; margin-top: 4px; margin-left: auto; margin-right: 8px; font-size: 11.5px; font-weight: 800; border-radius: 999px; padding: 3px 11px; white-space: nowrap; }
+    .ord-status.st-wait { color: #9a4a1a; background: #fbe9db; } .ord-status.st-sent { color: #2a5aa0; background: #e6eefa; } .ord-status.st-arr { color: #1f7a46; background: #e3f3ea; }
+    .ord-sel { display: flex; align-items: center; gap: 11px; margin-bottom: 10px; }
+    .ord-sel .ord-k { font-size: 14px; font-weight: 800; color: #5a524c; width: 52px; flex: 0 0 auto; }
+    .ord-selwrap { flex: 1; min-width: 0; } .ord-selwrap select { width: 100%; font-size: 15px; font-weight: 700; }
+    .ord-val { display: block; font-size: 15.5px; font-weight: 800; color: var(--ink); padding: 11px 2px; }
+    .ord-usebtn { flex: 1; min-width: 0; text-align: left; border: 1.5px solid var(--line); border-radius: 11px; background: #fff; padding: 11px 13px; font-size: 14.5px; font-weight: 700; color: var(--ink); cursor: pointer; }
+    .ord-usebtn .cnt { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .ord-flow2 { font-size: 12.5px; color: #5a524c; background: #faf6f2; border: 1px solid #efe1d6; border-radius: 10px; padding: 9px 11px; margin: 4px 0 12px; line-height: 1.6; } .ord-flow2 b { color: var(--brand-dark); }
+    .od-head { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 800; color: var(--muted); padding: 2px 2px 7px; border-bottom: 2px solid #efe8e2; }
+    .od-head .od-hd { flex: 1; } .od-head > span:not(.od-hd) { width: 56px; text-align: center; flex: 0 0 auto; }
+    .od-row { border-bottom: 1px dashed #efe8e2; padding: 7px 0; }
+    .od-main { display: flex; align-items: center; gap: 8px; }
+    .od-rhd { flex: 1; min-width: 0; text-align: left; background: none; border: 0; font-size: 14px; font-weight: 800; color: var(--ink); cursor: pointer; padding: 4px 0; }
+    .od-rhd .od-ar { color: var(--brand); font-weight: 900; margin-right: 5px; }
+    .od-first { font-size: 10.5px; font-weight: 800; color: #9a4a1a; background: #fbe9db; border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
+    .od-in { width: 56px; flex: 0 0 auto; text-align: center; font-size: 17px; font-weight: 800; padding: 8px 2px; }
+    .oref { background: #faf7f4; border: 1px solid #efe6de; border-radius: 10px; padding: 4px 11px; margin: 7px 0 2px; }
+    .oref-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; font-size: 13px; padding: 7px 0; } .oref-row + .oref-row { border-top: 1px dashed #e8ddd4; }
+    .oref-tag { font-weight: 800; color: var(--ink); white-space: nowrap; } .oref-pill { font-size: 10px; background: #e7f1ea; color: #2f7d52; border-radius: 6px; padding: 1px 6px; margin-left: 3px; font-weight: 800; }
+    .oref-n { margin-left: auto; font-weight: 800; white-space: nowrap; } .oref-n i { font-style: normal; color: var(--muted); font-size: 11px; margin-right: 1px; }
+    .oref-fill { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-weight: 800; color: var(--brand-dark); font-size: 12px; cursor: pointer; white-space: nowrap; }
+    .oref-empty { font-size: 12.5px; color: var(--muted); padding: 7px 2px; }
+    .ord-sum { margin-top: 10px; }
+    .os-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+    .os-row .os-k { flex: 1; min-width: 0; text-align: left; font-size: 13.5px; font-weight: 700; color: #5a524c; }
+    .os-row .os-c { width: 56px; flex: 0 0 auto; text-align: center; font-weight: 800; }
+    .os-row.os-sum { border-top: 2px solid #e7cdbf; padding-top: 10px; } .os-row.os-sum .os-k { font-weight: 900; color: var(--ink); }
+    .os-row.os-stk .os-k, .os-row.os-stk .os-c { color: #8a7f77; }
+    .ord-sum .os-row:first-child { border-top: 2px solid #e7cdbf; padding-top: 10px; }
+    .os-sd { display: block; font-size: 12px; font-weight: 600; color: #8a7f77; margin-top: 1px; }
+    .os-ck { font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; } .os-ck input { width: 17px; height: 17px; }
+    .os-row.os-net .os-k { color: var(--brand-dark); font-weight: 900; } .os-row.os-net .os-c { font-size: 17px; font-weight: 900; }
+    .ord-stocknote { font-size: 11.5px; color: var(--muted); text-align: right; margin-top: 3px; }
+    .ord-cell.kg > span { font-size: 13px; }
+    .ord-delbtn { display: block; width: 100%; margin-top: 11px; background: none; border: 0; color: var(--danger); font-weight: 800; font-size: 13.5px; padding: 8px; cursor: pointer; }
+    .kgsep { text-align: center; font-size: 12px; color: var(--muted); font-weight: 700; margin: 13px 0 9px; }
+    /* 使用日多選面板 */
+    .ud-list { display: grid; gap: 8px; margin-bottom: 4px; }
+    .ud-opt { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: 12px; cursor: pointer; }
+    .ud-opt.on { border-color: #87b79a; background: #f3faf5; } .ud-opt.off { opacity: .5; }
+    .ud-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .ud-box { width: 22px; height: 22px; border-radius: 7px; border: 1.8px solid #cdbfb3; flex: 0 0 auto; position: relative; }
+    .ud-opt.on .ud-box { background: #2f7d52; border-color: #2f7d52; } .ud-opt.on .ud-box::after { content: "✓"; color: #fff; font-weight: 900; font-size: 14px; position: absolute; left: 3px; top: -1px; }
+    .ud-d { font-size: 15px; font-weight: 800; color: var(--ink); }
+    .ud-cnt { font-size: 13.5px; font-weight: 800; color: #5a524c; } .ud-cnt b { color: var(--brand-dark); }
+    /* 批發商設定(可多家) */
+    .sup-card { border: 1.5px solid var(--line); border-radius: 14px; padding: 13px 13px 12px; margin-bottom: 13px; background: #fff; }
+    .sup-card.def { border-color: #d9a689; background: #fffdfb; box-shadow: 0 0 0 3px rgba(217,166,137,.1); }
+    .sup-chd { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
+    .sup-name { flex: 1; min-width: 0; font-size: 16px; font-weight: 800; }
+    .sup-defbadge { font-size: 11.5px; font-weight: 800; color: #1f7a46; background: #e3f3ea; border-radius: 999px; padding: 4px 11px; white-space: nowrap; }
+    .sup-setdef { font-size: 12.5px; font-weight: 800; color: #4a5668; background: #fff; border: 1px solid #d9d2cb; border-radius: 9px; padding: 6px 11px; cursor: pointer; white-space: nowrap; }
+    .sup-del { background: none; border: 0; cursor: pointer; font-size: 17px; padding: 4px 6px; flex: 0 0 auto; }
+    .sup-sub { font-size: 12px; color: var(--muted); font-weight: 700; margin: 9px 2px 7px; }
+    .sup-addsup { width: 100%; justify-content: center; margin-bottom: 4px; }
+    /* 批發商休息設定 */
+    .fld-lbl { font-size: 14.5px; font-weight: 800; color: var(--ink); margin: 2px 2px 8px; }
+    .sup-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .sup-week .wd { text-align: center; padding: 11px 0; border: 1.5px solid #e2d8d0; border-radius: 10px; font-size: 15px; font-weight: 700; color: #5a524c; background: #fff; cursor: pointer; }
+    .sup-week .wd.off { background: #fbeae7; border-color: #e0a99b; color: #9a2b1c; }
+    .sup-drow { display: flex; align-items: center; gap: 8px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 10px; background: #faf7f4; margin-bottom: 8px; font-size: 14px; font-weight: 700; }
+    .sup-drow .x { margin-left: auto; color: var(--danger); font-weight: 800; cursor: pointer; background: none; border: 0; font-size: 15px; }
+    .sup-empty { font-size: 13px; color: var(--muted); padding: 2px 2px 10px; }
+    .sup-add { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+    .sup-add .input { flex: 1; min-width: 0; }
+    .sup-add .secondary-btn { white-space: nowrap; }
+    .sup-prev { margin-top: 16px; border: 1px dashed #d9ccc3; border-radius: 10px; padding: 11px 13px; background: #fcfaf8; }
+    .sup-prev h4 { margin: 0 0 7px; font-size: 12.5px; color: var(--brand-dark); }
+    .sup-prev .pl { font-size: 13px; font-weight: 700; color: #5a524c; line-height: 2; }
+    .sup-prev .pl b { color: #b0a79f; margin: 0 2px; } .sup-prev .pl .u { color: #7a2e1c; font-weight: 900; }
+    /* 月曆下方工具列 */
+    .ck-foot { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .ck-foot button { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; font-weight: 700; color: var(--ink); font-size: 14px; cursor: pointer; }
+    /* 備份彈窗 */
+    .bk-note { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin: 0 0 12px; }
+    .bk-btn { display: block; width: 100%; text-align: center; background: var(--brand-soft); color: var(--brand-dark); border: 0; border-radius: 12px; padding: 14px; font-weight: 800; font-size: 15px; margin-bottom: 10px; cursor: pointer; }
+    .bk-warn { color: var(--danger); font-size: 12.5px; margin: 4px 0 0; }
+    /* 使用說明 */
+    #ckGuideBtn.ck-guide-btn { background: var(--brand-soft); border-color: #e7cdbf; color: var(--brand-dark); }
+    .gd .gd-sec { margin: 2px 0 18px; }
+    .gd .gd-sec > h4 { margin: 0 0 10px; font-size: 15.5px; color: var(--brand-dark); }
+    .gd-step { display: flex; gap: 12px; align-items: flex-start; background: #faf7f4; border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; margin-bottom: 9px; }
+    .gd-step .gd-num { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 15px; }
+    .gd-step .tx { font-size: 14px; line-height: 1.65; }
+    .gd-step .tx b { font-weight: 800; }
+    .gd-legend { display: grid; gap: 9px; }
+    .gd-leg-row { display: flex; align-items: center; gap: 10px; font-size: 14px; line-height: 1.5; }
+    .gd-sw { flex: none; width: 26px; height: 20px; border-radius: 5px; border: 1px solid; }
+    .gd-tools { display: grid; gap: 9px; }
+    .gd-tool { display: flex; gap: 10px; font-size: 14px; line-height: 1.55; }
+    .gd-tool .k { flex: none; font-weight: 800; min-width: 118px; }
+    .gd-tip { background: #fbeee7; border: 1px solid #e7cdbf; border-radius: 12px; padding: 13px 15px; font-size: 13.5px; line-height: 1.9; color: var(--ink); }
+    .gd-tip b { font-weight: 800; }
+    /* 部位對照表 */
+    table.pm { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; }
+    table.pm th, table.pm td { padding: 9px 6px; text-align: center; border-bottom: 1px solid #f0ebe7; }
+    table.pm th { color: var(--muted); font-size: 12px; background: #fcfaf8; }
+    table.pm td:first-child, table.pm th:first-child { text-align: left; font-weight: 700; }
+    table.pm input { width: 60px; border: 1px solid #dcd4ce; border-radius: 9px; padding: 9px 6px; text-align: center; font: inherit; font-size: 17px; font-weight: 700; }
+    .pm-note { color: var(--muted); font-size: 12px; margin: 12px 2px 0; line-height: 1.6; }
+    /* 設定分區標題 ＋ ② 採購換算 */
+    .pm-sec-h { font-size: 14px; font-weight: 800; color: var(--brand-dark); margin: 2px 2px 8px; }
+    .pm-sec2 { margin-top: 16px; border-top: 1px dashed var(--line); padding-top: 14px; }
+    .pm-sec-sub { font-size: 12px; color: var(--muted); margin: -4px 2px 10px; }
+    .pu-head { display: flex; align-items: center; gap: 8px; padding: 0 2px 6px; font-size: 12px; color: var(--muted); }
+    .pu-head .h1 { flex: 1; } .pu-head .h2 { width: 92px; text-align: center; } .pu-head .h3 { width: 92px; text-align: center; }
+    .pu-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+    .pu-row .pl { flex: 1; font-weight: 700; font-size: 15px; white-space: nowrap; }
+    .pu-in { width: 92px; box-sizing: border-box; border: 1px solid #dcd4ce; border-radius: 9px; padding: 10px 4px; text-align: center; font: inherit; font-size: 16px; font-weight: 700; color: var(--ink); background: #fff; }
+    .pu-in.g { width: 92px; } .pu-u { font-size: 13px; color: var(--muted); width: 16px; }
+    /* 部位對照表修改紀錄 */
+    .pm-hist { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; }
+    .pm-hist-title { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+    .pm-hist-empty { font-size: 13px; color: var(--muted); padding: 4px 2px; }
+    .gd-adv { margin: 4px 0 14px; border: 1px solid var(--line); border-radius: 12px; background: #fffdfb; padding: 0 14px; }
+    .gd-adv summary { cursor: pointer; font-size: 15.5px; font-weight: 900; color: var(--brand-dark); padding: 13px 0; }
+    .gd-adv h5 { font-size: 15px; font-weight: 900; color: var(--ink); margin: 8px 0 6px; }
+    .gd-rules { margin: 0 0 12px; padding-left: 20px; font-size: 14px; line-height: 1.7; color: #4a423c; }
+    .gd-rules li { margin-bottom: 7px; } .gd-rules b { color: var(--ink); }
+    .gd-f { background: #f6f1ec; border-radius: 8px; padding: 7px 10px; margin: 5px 0 2px; font-size: 13.5px; line-height: 1.75; color: #3d3630; }
+    .dg-dayrev { font-size: 14.5px; color: #5a524c; background: #faf7f4; border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; margin-bottom: 8px; } .dg-dayrev b { color: var(--ink); }
+    .ps-hist-h { font-size: 13.5px; font-weight: 800; color: var(--brand-dark); margin: 14px 2px 6px; }
+    .ps-hist { display: grid; gap: 6px; margin-bottom: 4px; }
+    .ps-hist-row { background: #faf7f4; border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; font-size: 13.5px; color: #5a524c; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .ps-hist-row b { color: var(--ink); } .ps-hist-row .now { margin-left: auto; font-size: 11.5px; color: #fff; background: var(--ok); border-radius: 999px; padding: 2px 8px; }
+    .dg-sug-tag { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 2px; }
+    .pm-ver { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: #faf7f4; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 7px; font-size: 14px; font-weight: 700; color: var(--ink); cursor: pointer; }
+    .pm-ver .d { color: var(--brand-dark); }
+    .pm-ver .now { font-size: 11.5px; color: #fff; background: var(--ok); border-radius: 999px; padding: 2px 8px; }
+    .pm-ver .arrow { margin-left: auto; color: var(--muted); }
+    .pm-ver-range { background: #eef2f7; color: #4a5668; border-radius: 10px; padding: 9px 12px; font-size: 13px; margin-bottom: 12px; }
+    .pm-ver.pm-ver-base { background: #f1f4f8; border-color: #d8e0ea; }
+    .pm-ver .org { font-size: 11.5px; color: #fff; background: #6b7a90; border-radius: 999px; padding: 2px 8px; }
+    .pm-ver-sub { font-size: 12.5px; font-weight: 800; color: var(--brand-dark); margin: 12px 2px 6px; }
+    .pm-ver-sub:first-child { margin-top: 0; }
+    /* 餅皮推估提示按鈕(與雞肉推估並列) */
+    .ck-hint-dough { background: linear-gradient(135deg, #fff 0%, #fdf1e6 100%); border-color: #ecd0b4; color: #9a4a1a; margin-top: 8px; }
+    /* 餅皮推估檢視 */
+    .dg-sec-h { font-size: 13.5px; font-weight: 800; color: var(--brand-dark); margin: 2px 2px 9px; }
+    .dg-up-list { display: grid; gap: 10px; }
+    .dg-up { display: block; width: 100%; text-align: left; border: 1.5px solid #ecd9cb; border-radius: 13px; background: #fffdfb; padding: 11px 13px; cursor: pointer; }
+    .dg-up-h { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+    .dg-tag { font-size: 11px; font-weight: 800; color: #5a524c; background: #efeae4; border-radius: 999px; padding: 2px 9px; }
+    .dg-tag.wk { color: #9a4a1a; background: #fbe3d2; }
+    .dg-up-nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+    .dg-up-nums span { background: #fff; border: 1px solid #ecd9cb; border-radius: 9px; padding: 7px 2px; text-align: center; }
+    .dg-up-nums i { display: block; font-style: normal; font-size: 11px; color: var(--muted); }
+    .dg-up-nums b { font-size: 20px; color: #9a4a1a; }
+    .dg-up-note { margin-top: 7px; font-weight: 700; font-size: 13px; color: #6b5a4c; line-height: 1.5; }
+    .dg-recent { display: grid; gap: 7px; }
+    .dg-rrow { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 1px solid var(--line); border-radius: 11px; background: #faf7f4; padding: 10px 12px; cursor: pointer; }
+    .dg-rd { font-size: 14px; font-weight: 800; color: var(--ink); flex: 0 0 auto; min-width: 86px; }
+    .dg-rm { font-size: 14px; color: #5a524c; } .dg-rm b { color: var(--ink); font-weight: 800; }
+    .dg-rm > span { white-space: nowrap; }
+    @media (max-width:480px){ .dg-rd { min-width: 0; } .dg-rrow { gap: 8px; } }
+    .dg-rdiff { margin-left: auto; font-size: 13.5px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+    .dg-rdiff.pos { color: #b7791f; } .dg-rdiff.neg { color: var(--danger); }
+    table.ck-items.ca-sum th { font-size: 12.5px; } table.ck-items.ca-sum td { font-size: 17px; font-weight: 800; }
+    table.ck-items.ca-sum th:first-child, table.ck-items.ca-sum td:first-child { width: 16%; }
+    .ca-ok { color: #2f7d52; } .ca-short { color: var(--danger); } .ca-over { color: #b7791f; }
+    .ca-ps { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+    .ca-p { font-size: 14px; font-weight: 800; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 3px 8px; white-space: nowrap; }
+    .ca-p i { font-style: normal; font-weight: 700; margin-right: 3px; color: var(--muted); }
+    .ca-p.ok { color: #2f7d52; } .ca-p.short { color: var(--danger); border-color: #f0c2bb; background: #fff5f3; } .ca-p.over { color: #b7791f; }
+    .ca-row.has-short { border-color: #f0c2bb; }
+    .dg-up-more { margin-left: auto; font-size: 13px; font-weight: 800; color: var(--brand); }
+    .dg-up-nums span.fl { background: #fff6ec; border-color: #f0cfa8; }
+    .dg-acc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+    .dg-acc { border-radius: 12px; padding: 10px 4px; text-align: center; border: 1px solid var(--line); background: #faf7f4; }
+    .dg-acc b { display: block; font-size: 24px; line-height: 1.2; }
+    .dg-acc span { font-size: 13px; font-weight: 700; color: var(--muted); }
+    .dg-acc.ok b { color: #2f7d52; } .dg-acc.short b { color: var(--danger); } .dg-acc.over b { color: #b7791f; }
+    .dg-acc-sum { font-size: 14px; color: #5a524c; margin: 0 2px 10px; } .dg-acc-sum b { color: var(--ink); font-size: 16px; }
+    .dg-rdiff.ok { color: #2f7d52; } .dg-rdiff.short { color: var(--danger); } .dg-rdiff.over { color: #b7791f; }
+    .dg-sec-h .dg-rdiff { margin-left: 8px; font-size: 14px; }
+    .dg-sug { background: #fff6ec; border: 1.5px solid #f0cfa8; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; }
+    .dg-sug-h { font-size: 14px; font-weight: 800; color: var(--brand-dark); margin-bottom: 6px; }
+    .dg-sug-n { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .dg-sug-n span { font-size: 16px; font-weight: 800; color: var(--ink); line-height: 1.25; }
+    .dg-sug-n b { font-size: 30px; color: #9a4a1a; margin-left: 4px; }
+    .dg-sug-n small { display: block; font-size: 13.5px; color: var(--muted); font-weight: 700; }
+    #doughDetBody .dg-sec-h { margin-top: 16px; }
+    .dg-basis td:first-child { text-align: left; font-size: 13.5px; }
+    .dg-basis td.dg-hi { background: #fff0dc; font-weight: 900; color: #9a4a1a; }
+    .dg-explain { font-size: 13.5px; color: #6b5a4c; line-height: 1.6; margin: 8px 2px 0; }
+    .dg-rev { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .dg-rev b { font-size: 24px; color: var(--ink); } .dg-rev span { font-size: 14px; color: var(--muted); }
+    .dg-rev-sub { font-size: 14px; color: #5a524c; margin: 4px 2px 8px; } .dg-rev-sub b { color: var(--ink); }
+    .dg-rvs { border: 1px solid var(--line); border-radius: 12px; background: #faf7f4; padding: 2px 12px; }
+    .dg-rv { padding: 9px 0; } .dg-rv + .dg-rv { border-top: 1px solid #ece4dd; }
+    .dg-rv-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+    .dg-rv-h b { font-size: 18px; font-weight: 900; white-space: nowrap; }
+    .dg-rv small { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .dg-warn { font-size: 13.5px; color: #8a5a10; background: #fff8e6; border: 1px solid #f1dca8; border-radius: 10px; padding: 9px 11px; margin-top: 8px; line-height: 1.6; }
+    table.ck-items.dg-samp { table-layout: auto; }
+    table.ck-items.dg-samp th, table.ck-items.dg-samp td { white-space: nowrap; padding-left: 4px; padding-right: 4px; }
+    table.ck-items.dg-samp th:first-child, table.ck-items.dg-samp td:first-child { width: auto; }
+    .dg-det-sub { font-size: 12.5px; font-weight: 700; color: var(--brand-dark); background: #faf6f2; border: 1px solid #efe1d6; border-radius: 10px; padding: 9px 11px; margin-bottom: 12px; line-height: 1.5; }
+    /* 比薩餅皮參數 */
+    .pz-autobtn { margin-bottom: 14px; }
+    .pz-grp { border: 1px solid var(--line); border-radius: 13px; padding: 12px 13px 4px; margin-bottom: 13px; }
+    .pz-grp-h { font-size: 14.5px; font-weight: 800; color: var(--brand-dark); margin: 0 0 8px; }
+    .pz-field { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+    .pz-field > label { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .pz-ck { width: 18px; height: 18px; margin-left: 4px; }
+    .pz-cklbl { font-size: 12px; font-weight: 700; color: var(--muted); }
+    .pz-inwrap { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
+    .pz-in { width: 108px; text-align: right; font-size: 17px; font-weight: 800; padding: 10px 10px; }
+    .pz-in.pz-auto { background: #f1f0ee; color: var(--muted); }
+    .pz-pre, .pz-suf { font-size: 14px; font-weight: 800; color: var(--muted); }
+    .pz-note { font-size: 13px; color: var(--muted); line-height: 1.65; margin: 0 2px 10px; }
+    .pz-hint { font-size: 12.5px; color: #2f7d52; font-weight: 700; margin: -6px 2px 11px; text-align: right; }
+    .pz-prev { border: 1px dashed #d9ccc3; border-radius: 12px; padding: 12px 13px; background: #fcfaf8; margin-bottom: 4px; }
+    .pz-prev h4 { margin: 0 0 8px; font-size: 13px; color: var(--brand-dark); }
+    .pz-prev .pzp-line { font-size: 12.5px; color: #5a524c; line-height: 1.9; } .pz-prev .pzp-line b { color: var(--ink); font-weight: 900; }
+    .pz-prev .pzp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+    .pzp-cell { background: #fff; border: 1px solid #ecd9cb; border-radius: 10px; padding: 9px 4px; text-align: center; }
+    .pzp-cell span { display: block; font-size: 12.5px; color: var(--muted); } .pzp-cell b { font-size: 22px; color: #9a4a1a; }
+    .pz-grp-main { border-color: #d9a689; background: #fffdfb; box-shadow: 0 0 0 3px rgba(217,166,137,.1); }
+    .pz-auto-sum { font-size: 13.5px; color: #4a5668; background: #eef2f7; border: 1px solid #d8e0ea; border-radius: 12px; padding: 12px 13px; margin-bottom: 13px; line-height: 2; } .pz-auto-sum b { color: #2a2420; font-weight: 900; }
+    .pz-adv { border: 1px solid var(--line); border-radius: 13px; margin: 14px 0 4px; background: #fff; }
+    .pz-adv > summary { cursor: pointer; padding: 14px; font-size: 14.5px; font-weight: 800; color: var(--brand-dark); list-style: none; display: flex; align-items: center; }
+    .pz-adv > summary::-webkit-details-marker { display: none; }
+    .pz-adv > summary::after { content: "▾"; margin-left: auto; color: var(--muted); font-size: 13px; }
+    .pz-adv[open] > summary::after { content: "▴"; }
+    .pz-adv[open] > summary { border-bottom: 1px solid var(--line); }
+    .pz-adv > *:not(summary) { margin-left: 13px; margin-right: 13px; }
+    .pz-adv > details + *, .pz-adv .pz-note:last-child { margin-bottom: 12px; }
+    /* 月曆格 */
+    .employee-cal-day { min-height: 90px; justify-content: flex-start; position: relative; color: var(--ink); }
+    .employee-cal-day .day-number { color: var(--ink); }           /* 明確設定，避免 iOS 把按鈕文字變藍 */
+    .employee-cal-day .day-number.ck-red { color: #b3261e; }        /* 假日／國定假日：深紅 */
+    .ck-ord-mark { position: absolute; top: 6px; right: 7px; font-size: 12px; }
+    .ck-parts { display: flex; flex-direction: column; gap: 1px; margin-top: 4px; width: 100%; }
+    .ck-line { display: flex; justify-content: space-between; align-items: center; line-height: 1.25; }
+    .ck-line i { font-style: normal; color: var(--muted); font-size: 10.5px; }
+    .ck-line b { font-size: 13.5px; font-weight: 800; }
+    .calendar-legend { font-size: 13px; }
+    .ck-leg { color: #8f3521; } .ck-fil { color: #2f7d52; } .ck-wing { color: #b7791f; }
+    .ck-tag { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .ck-ord-tag { color: #b7791f; font-weight: 700; }
+    .employee-cal-day.available { background: #f3faf5; border-color: #cfe6d7; }
+    .employee-cal-day.ck-rest { background: #f3f0ed; border-color: #e4ddd7; }
+    .employee-cal-day.ck-rest .day-number { color: #9a9089; }
+    .employee-cal-day.ck-order { background: #fff3c9; border-color: #ecd98f; }    /* 已排叫貨：黃底 */
+    .employee-cal-day.ck-today { box-shadow: inset 0 0 0 2px var(--brand); }
+    .employee-cal-day.ck-out { border: 0; background: transparent; min-height: 0; }
+    .employee-cal-day:not([disabled]) { cursor: pointer; }
+    /* 上傳／明細 */
+    .ck-drop { border: 2px dashed #d9ccc3; border-radius: 14px; background: #fcfaf8; padding: 24px; text-align: center; cursor: pointer; }
+    .ck-drop .ico { font-size: 28px; } .ck-drop p { margin: 6px 0 2px; font-weight: 700; } .ck-drop small { color: var(--muted); }
+    .ck-fetch { border: 1px solid var(--line); border-radius: 12px; background: #fcfaf8; padding: 14px; margin-bottom: 14px; }
+    .ck-fetch-h { margin: 0 0 8px; font-weight: 800; color: var(--brand-dark); font-size: 14px; }
+    .ck-fetch .hint { margin-top: 8px; }
+    .ck-datehead { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+    .ck-datehead b { color: var(--ink); font-size: 16px; }
+    .ck-sumline { font-size: 13px; font-weight: 700; color: #4a5668; background: #eef2f7; border: 1px solid #d8e0ea; border-radius: 10px; padding: 9px 12px; margin: 0 0 12px; line-height: 1.7; } .ck-sumline b { color: #2a2420; }
+    .ck-parts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 4px 0 12px; }
+    .ck-stat { border-radius: 14px; padding: 14px; text-align: center; border: 1px solid; }
+    .ck-stat.leg { background: #fbeee9; border-color: #eccfc3; } .ck-stat.fil { background: #e9f5ee; border-color: #c3e2cf; } .ck-stat.wing { background: #fff5e4; border-color: #f0dcae; }
+    .ck-stat span { font-size: 12.5px; color: var(--muted); } .ck-stat strong { display: block; font-size: 30px; margin-top: 3px; }
+    .ck-stat.leg strong { color: #8f3521; } .ck-stat.fil strong { color: #2f7d52; } .ck-stat.wing strong { color: #b7791f; }
+    table.ck-items { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; }
+    table.ck-items th, table.ck-items td { padding: 8px 6px; font-size: 13px; border-bottom: 1px solid #f0ebe7; text-align: center; overflow: hidden; }
+    table.ck-items th { color: var(--muted); font-size: 11px; background: #fcfaf8; }
+    table.ck-items th:first-child, table.ck-items td:first-child { text-align: left; width: 38%; }
+    table.ck-items tr.sum td { font-weight: 800; background: #faf7f4; border-top: 1px solid var(--line); }
+    .ck-muted { color: var(--muted); }
+    .ck-saved { display: flex; align-items: center; gap: 8px; color: var(--ok); font-size: 13px; margin: 8px 2px 0; }
+    .ck-err { color: var(--danger); font-size: 14px; padding: 14px; background: #fdeaea; border-radius: 12px; margin-top: 4px; }
+    .ck-holi-line { background: #fff3c9; border: 1px solid #ecd98f; color: #8a6d1f; border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+    .ck-kgline { background: #fbeee7; border: 1px solid #e7cdbf; color: #7a2e1c; border-radius: 10px; padding: 9px 12px; font-size: 14px; font-weight: 700; margin: 0 0 12px; }
+    .cmp-h { font-size: 13px; font-weight: 800; color: var(--brand-dark); margin: 4px 2px 6px; }
+    .ck-srcline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; font-weight: 700; color: #4a5668; background: #eef2f7; border: 1px solid #d8e0ea; border-radius: 10px; padding: 9px 12px; margin: 0 0 10px; } .ck-srcline b { color: #2a2420; }
+    .ck-srcbtn { margin-left: auto; background: #fff; border: 1px solid #d3dae4; border-radius: 8px; padding: 5px 11px; font-size: 12.5px; font-weight: 800; color: #4a5668; cursor: pointer; }
+    .ck-form .field { margin: 12px 0; }
+    .ck-num3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    /* 平板放大(字太小不好讀；涵蓋到 iPad 橫向 ~1366px) */
+    @media (min-width: 481px) and (max-width: 1400px) {
+      .ck-toolbar h2 { font-size: 23px; } .ck-toolbar p { font-size: 15px; }
+      .ck-hint { font-size: 15.5px; } .ord-lbl { font-size: 16px; } .ord-cell > span { font-size: 15px; } .sug-row2 { font-size: 15px; } .sug-nums2 { font-size: 16px; } .sug-fill2 { font-size: 14px; } .sug-setlink { font-size: 13px; } .ck-foot button { font-size: 15px; } table.pm input { font-size: 19px; }
+      .employee-cal-day { min-height: 112px; }
+      .employee-cal-day .day-number { font-size: 19px; }
+      .ck-line i { font-size: 13px; } .ck-line b { font-size: 18px; } .ck-tag { font-size: 13px; }
+      .weekdays span { font-size: 15px; } .calendar-legend { font-size: 15px; }
+      .ck-form .field > span { font-size: 16px; }
+      .ord-cell input { font-size: 30px; }
+      .modal-head h3 { font-size: 21px; }
+      .modal-body .input[type=date] { font-size: 18px; padding: 13px; }
+      .modal-actions .ghost-btn, .modal-actions .primary-btn { font-size: 17px; }
+      table.ck-items th { font-size: 13px; } table.ck-items td { font-size: 16px; padding: 11px 6px; }
+      .cmp-h { font-size: 16px; } .ck-stat span { font-size: 15px; } .ck-stat strong { font-size: 36px; }
+      .ck-fetch-h { font-size: 16px; }
+      .gd .gd-sec > h4 { font-size: 17.5px; } .gd-step .tx, .gd-leg-row, .gd-tool, .gd-tip { font-size: 16px; } .gd-tool .k { min-width: 128px; }
+    }
+    /* 手機版放大(主要使用者年長，好讀好輸入) */
+    @media (max-width: 480px) {
+      .ck-toolbar h2 { font-size: 22px; } .ck-toolbar p { font-size: 14px; }
+      .ck-btns { width: 100%; } .ck-btns .ghost-btn, .ck-btns .primary-btn { flex: 1; font-size: 16px; padding: 14px 10px; }
+      .ck-hint { font-size: 14.5px; } .ord-lbl { font-size: 16px; } .ck-foot button { font-size: 15px; } table.pm input { font-size: 19px; }
+      /* 參考區(手機放大一點好讀) */
+      .sug-tag2 { font-size: 14px; } .sug-nums2 { font-size: 15.5px; } .sug-nums2 i { font-size: 12px; } .sug-fill2 { font-size: 13.5px; } .sug-setlink { font-size: 13px; }
+      .employee-cal-day { min-height: 112px; padding: 5px 3px; }
+      .employee-cal-day .day-number { font-size: 17px; }
+      /* 月曆：標籤＋數字置中成一組，縮內距字級 → 3 位數也不會被切 */
+      .ck-parts { gap: 2px; }
+      .ck-line { justify-content: center; gap: 3px; align-items: baseline; }
+      .ck-line i { font-size: 11px; } .ck-line b { font-size: 15px; letter-spacing: -0.2px; } .ck-tag { font-size: 12px; }
+      .weekdays span { font-size: 14px; } .calendar-legend { font-size: 13px; }
+      .ck-form .field > span { font-size: 16px; }
+      .ord-cell input { font-size: 30px; }
+      .modal-head h3 { font-size: 20px; }
+      .modal-body .input[type=date] { font-size: 18px; padding: 14px; }
+      .modal-actions .ghost-btn, .modal-actions .primary-btn { font-size: 17px; padding: 14px 18px; }
+      table.ck-items th { font-size: 13px; } table.ck-items td { font-size: 15px; padding: 11px 8px; }
+      .cmp-h { font-size: 15px; } .ck-stat span { font-size: 14px; } .ck-stat strong { font-size: 34px; }
+      .gd .gd-sec > h4 { font-size: 16.5px; } .gd-step .tx, .gd-leg-row, .gd-tool, .gd-tip { font-size: 15px; } .gd-tool { flex-direction: column; gap: 2px; } .gd-tool .k { min-width: 0; }
+    }
+
+    /* =============================================================
+       UIUX 優化層(純外觀；不改內容與邏輯)
+       —— 以來源順序覆蓋前面同權重規則 ——
+       ============================================================= */
+    /* 主要操作按鈕：加互動回饋 */
+    .ck-btns .ghost-btn, .ck-btns .primary-btn { transition: transform .08s ease, box-shadow .15s ease, border-color .15s ease; }
+    .ck-btns .primary-btn:hover { box-shadow: 0 6px 16px rgba(146,53,33,.22); transform: translateY(-1px); }
+    .ck-btns .ghost-btn:hover { border-color: #d9a689; transform: translateY(-1px); }
+    /* 頂部資訊卡(庫存／雞肉推估／餅皮推估)：統一節奏＋點擊回饋 */
+    .ck-stock-top { margin: 14px 0 0; box-shadow: 0 1px 3px rgba(60,40,30,.05); }
+    .ck-hint { margin: 10px 0 0; transition: transform .08s ease, box-shadow .15s ease, border-color .15s ease; }
+    .ck-hint:hover { border-color: #d9a689; box-shadow: 0 4px 14px rgba(146,53,33,.09); transform: translateY(-1px); }
+    .ck-hint-dough { margin-top: 10px; }
+    /* 月曆面板：加一點層次；格子加上可點回饋 */
+    .chk-wrap section.panel { box-shadow: 0 2px 16px rgba(60,40,30,.05); border-radius: 18px; }
+    .employee-cal-day { transition: box-shadow .14s ease, border-color .14s ease, transform .08s ease; }
+    .employee-cal-day:not([disabled]):hover { border-color: #d9a689; box-shadow: 0 4px 12px rgba(146,53,33,.1); transform: translateY(-1px); z-index: 1; }
+    .employee-cal-day.ck-today { box-shadow: inset 0 0 0 2px var(--brand), 0 3px 10px rgba(146,53,33,.12); }
+    /* 圖例：改成膠囊 chip，更好掃視 */
+    .calendar-legend { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+    .calendar-legend span { display: inline-flex; align-items: center; gap: 6px; background: #faf7f4; border: 1px solid #ece2d9; border-radius: 999px; padding: 5px 11px; line-height: 1; }
+    /* 底部工具列：由鬆散藥丸 → 整齊的工具盤 */
+    .ck-foot { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 10px; margin-top: 18px; padding: 14px; background: #faf7f4; border: 1px solid #ece2d9; border-radius: 18px; }
+    .ck-foot button { display: flex; align-items: center; gap: 9px; justify-content: flex-start; text-align: left; background: #fff; border: 1px solid #e7ddd4; border-radius: 13px; padding: 13px 15px; font-weight: 700; color: var(--ink); font-size: 14px; cursor: pointer; box-shadow: 0 1px 2px rgba(60,40,30,.04); transition: transform .08s ease, box-shadow .15s ease, border-color .15s ease; }
+    .ck-foot button:hover { border-color: #d9a689; box-shadow: 0 5px 14px rgba(146,53,33,.1); transform: translateY(-1px); }
+    .ck-foot button:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(60,40,30,.06); }
+    #ckGuideBtn.ck-guide-btn { background: var(--brand-soft); border-color: #e7cdbf; color: var(--brand-dark); font-weight: 800; }
+    #ckGuideBtn.ck-guide-btn:hover { border-color: #d9a689; }
+    @media (max-width: 480px) {
+      .ck-foot { grid-template-columns: 1fr 1fr; gap: 9px; padding: 12px; }
+      .ck-foot button { font-size: 14px; padding: 13px 12px; }
+    }
+
+    /* ================= App Shell(UI 2.0：響應式導覽＋四大頁) ================= */
+    /* 導覽列底色(溫暖深木)＝框架；磚紅＝動作按鈕；森林綠＝次要動作。改色只動 --nav-bg。 */
+    :root { --forest: #4a5d4f; --forest-dark: #3c4d41; --nav-bg: #2e2823; --nav-ink: #e9ddcf; }
+    .app-sidebar { display: flex; align-items: center; gap: 12px; background: var(--nav-bg); padding: 11px 16px; position: sticky; top: 0; z-index: 30; }
+    .app-brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .app-brand .brand-mark { width: 38px; height: 38px; border-radius: 11px; overflow: hidden; flex: 0 0 auto; background: #fff; }
+    .app-brand .brand-mark img { width: 100%; height: 100%; object-fit: cover; }
+    .app-brand .ab-text { display: flex; flex-direction: column; line-height: 1.22; min-width: 0; }
+    .app-brand .ab-text strong { color: #fff; font-size: 16px; }
+    .app-brand .ab-text span { color: #cdbfae; font-size: 12.5px; }
+    .nav-rail { display: none; }
+    .app-sidebar .sync-badge { flex: 0 0 auto; }
+    .app-main { max-width: 760px; margin: 0 auto; padding: 16px 16px 92px; }
+    .app-view { display: block; }
+    .app-view.hidden { display: none; }
+    .view-head { margin: 4px 2px 13px; }
+    .view-head h2 { margin: 0; font-size: 21px; }
+    .view-head p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .app-main .panel { box-shadow: 0 2px 16px rgba(60,40,30,.05); border-radius: 18px; }
+    /* 底部導覽(手機) */
+    .nav-bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; background: #fff; border-top: 1px solid #e7ddd4; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 12px rgba(0,0,0,.05); }
+    .nav-bottom button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: 0; padding: 6px 2px; font-size: 11.5px; font-weight: 700; color: var(--muted); cursor: pointer; }
+    .nav-bottom button .ni { font-size: 21px; filter: grayscale(.4) opacity(.72); }
+    .nav-bottom button.active { color: var(--brand-dark); }
+    .nav-bottom button.active .ni { filter: none; }
+    /* 首頁 */
+    .home-cards { display: grid; gap: 12px; }
+    .today-card { display: block; width: 100%; text-align: left; background: #fff; border: 1.5px solid #ecdfd4; border-radius: 16px; padding: 15px 16px; cursor: pointer; box-shadow: 0 2px 10px rgba(60,40,30,.05); transition: transform .08s ease, box-shadow .15s ease, border-color .15s ease; }
+    .today-card:hover { border-color: #d9a689; box-shadow: 0 5px 16px rgba(146,53,33,.1); transform: translateY(-1px); }
+    .today-card.muted { opacity: .72; cursor: default; box-shadow: none; }
+    .tc-h { display: flex; align-items: center; gap: 11px; }
+    .tc-ic { font-size: 26px; flex: 0 0 auto; }
+    .tc-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .tc-t b { font-size: 17px; color: var(--ink); } .tc-t small { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+    .tc-ar { color: #c9a187; font-size: 22px; font-weight: 800; }
+    .tc-nums { display: flex; gap: 10px; margin-top: 12px; }
+    .tc-nums span { flex: 1; background: #faf6f2; border: 1px solid #efe1d6; border-radius: 11px; padding: 9px 4px; text-align: center; }
+    .tc-nums i { font-style: normal; color: var(--muted); font-size: 12px; margin-right: 3px; }
+    .tc-nums b { font-size: 23px; font-weight: 900; }
+    .today-card { height: 100%; }
+    .tc-nums4 { gap: 8px; } .tc-nums span { padding: 8px 2px; } .tc-nums i { display: block; margin: 0 0 2px; font-size: 12.5px; font-weight: 700; } .tc-nums4 b.dg-c { color: #9a4a1a; }
+    .tc-dough { margin-top: 12px; background: #faf6f2; border: 1px solid #efe1d6; border-radius: 11px; padding: 11px 13px; font-size: 15px; font-weight: 700; color: #5a524c; }
+    .tc-dough b { color: #9a4a1a; font-size: 18px; font-weight: 900; margin: 0 2px; }
+    .home-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .home-actions button { padding: 16px; font-size: 16px; font-weight: 800; border-radius: 14px; }
+    .forest-btn { background: var(--forest); color: #fff; border: 0; cursor: pointer; transition: background .15s ease, transform .08s ease; }
+    .forest-btn:hover { background: var(--forest-dark); transform: translateY(-1px); }
+    /* 設定頁分組 */
+    .set-group { background: #fff; border: 1px solid #ece2d9; border-radius: 16px; padding: 4px 6px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(60,40,30,.04); }
+    .set-gh { font-size: 13.5px; font-weight: 800; color: var(--brand-dark); padding: 12px 12px 6px; }
+    .set-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-radius: 12px; padding: 13px 12px; cursor: pointer; }
+    .set-item + .set-item { border-top: 1px solid #f2ebe4; }
+    .set-item:hover { background: #faf7f4; }
+    .set-item .si-ic { font-size: 21px; flex: 0 0 auto; width: 30px; text-align: center; }
+    .set-item .si-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .set-item .si-tx b { font-size: 16px; color: var(--ink); } .set-item .si-tx small { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+    .set-item .si-ar { color: var(--muted); font-size: 19px; }
+    .view-actions { margin-top: 14px; display: flex; justify-content: flex-end; }
+    /* 平板 / 桌機：左側導覽列 */
+    @media (min-width: 721px) {
+      .app-shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+      .app-sidebar { flex-direction: column; align-items: stretch; gap: 0; height: 100vh; padding: 20px 16px; }
+      .app-brand { flex: 0 0 auto; margin-bottom: 22px; }
+      .nav-rail { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+      .nav-link { display: flex; align-items: center; gap: 11px; background: none; border: 0; border-radius: 12px; padding: 13px 14px; font-size: 16px; font-weight: 700; color: var(--nav-ink); cursor: pointer; text-align: left; }
+      .nav-link .ni { font-size: 19px; }
+      .nav-link:hover { background: rgba(255,255,255,.08); }
+      .nav-link.active { background: #fff; color: var(--brand-dark); font-weight: 800; }
+      .app-sidebar .sync-badge { margin-top: auto; align-self: flex-start; }
+      .app-main { max-width: 1040px; margin: 0; padding: 24px 32px; }
+      .nav-bottom { display: none; }
+      .view-head h2 { font-size: 24px; }
+      .home-cards { grid-template-columns: 1fr 1fr; align-items: stretch; }
+      .home-actions { max-width: 520px; }
+    }
+    @media (min-width: 721px) and (max-width: 980px) {
+      .app-shell { grid-template-columns: 200px 1fr; }
+      .app-main { padding: 22px 24px; }
+    }
+    /* 平板／桌機：日期明細改右側抽屜(手機維持置中彈窗) */
+    @media (min-width: 721px) {
+      #detailBackdrop, #doughDetBackdrop, #chkAccDetBackdrop { place-items: stretch end; padding: 0; }
+      #detailBackdrop .modal, #doughDetBackdrop .modal, #chkAccDetBackdrop .modal { width: min(480px, 94vw); height: 100vh; max-height: 100vh; border-radius: 20px 0 0 20px; animation: dsDrawer .22s ease; }
+    }
+    @keyframes dsDrawer { from { transform: translateX(26px); opacity: .5; } to { transform: none; opacity: 1; } }
+    /* 盤點紀錄：每格填寫人(雞肉/餅皮分開)＋已更正標＋更正鈕 */
+    .rec-tbl .rw .rf-l { display: block; white-space: nowrap; }
+    .rec-tbl .rw .rf-t { color: var(--muted); font-size: 11.5px; font-weight: 600; margin-left: 3px; }
+    .rec-edited { display: inline-block; font-size: 10.5px; font-weight: 800; color: #9a4a1a; background: #fbe9db; border-radius: 6px; padding: 1px 6px; margin-left: 5px; }
+    .rec-edit { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; font-size: 14px; cursor: pointer; }
+    .rec-edit:hover { border-color: #d9a689; }
+    /* 更正盤點彈窗 */
+    .se-sec { font-size: 14px; font-weight: 800; color: var(--brand-dark); margin: 4px 2px 9px; }
+    .view-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .se-date-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 15px; font-weight: 800; color: var(--ink); }
+    .se-date-row span { flex: 0 0 auto; } .se-date-row input { flex: 1; font-size: 17px; font-weight: 700; }
+    .se-note { font-size: 14px; color: #8a5a10; background: #fff8e6; border: 1px solid #f1dca8; border-radius: 10px; padding: 9px 11px; margin-bottom: 12px; line-height: 1.55; }
+    .se-part { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .se-part input { width: 20px; height: 20px; accent-color: var(--brand); }
+    .se-part input:disabled { opacity: .55; }
+    .se-off { opacity: .4; }
+    #stockEditBackdrop .ord-cell { display: grid; gap: 6px; } #stockEditBackdrop .ord-cell > span { font-size: 14px; font-weight: 700; }
+    #stockEditBackdrop .ord-cell input { width: 100%; text-align: center; font-size: 26px; font-weight: 800; padding: 12px 6px; }
+    #stockEditBackdrop .stock-pz { margin: 0 0 6px; } #stockEditBackdrop .pz-head, #stockEditBackdrop .pz-row { display: flex; align-items: center; gap: 10px; }
+    #stockEditBackdrop .pz-head { margin-bottom: 6px; } #stockEditBackdrop .pz-head span:not(.pz-lbl) { flex: 1; text-align: center; font-size: 13.5px; font-weight: 800; color: #5a524c; }
+    #stockEditBackdrop .pz-lbl { flex: 0 0 52px; font-size: 15px; font-weight: 900; color: var(--brand-dark); }
+    #stockEditBackdrop .pz-row { margin-bottom: 9px; } #stockEditBackdrop .pz-row input { flex: 1; min-width: 0; text-align: center; font-size: 22px; font-weight: 800; padding: 11px 4px; }
+    .se-orig { font-size: 12.5px; color: var(--muted); background: #faf7f4; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 6px 0 4px; line-height: 1.6; }
+    .se-hist-h { font-size: 12.5px; font-weight: 800; color: var(--brand-dark); margin: 12px 2px 6px; }
+    .se-hist-row { font-size: 12.5px; color: #5a524c; padding: 7px 10px; background: #fcfaf8; border: 1px solid var(--line); border-radius: 9px; margin-bottom: 6px; line-height: 1.5; }
+    /* 訂購雞肉彈窗：分區卡片＋底部固定操作＋已訂購鎖定 */
+    #orderBackdrop .modal { display: flex; flex-direction: column; max-height: 92vh; }
+    #orderBackdrop .modal-head { flex: 0 0 auto; }
+    #orderBackdrop .ord-body { overflow-y: auto; flex: 1 1 auto; -webkit-overflow-scrolling: touch; }
+    #orderBackdrop .ord-foot { flex: 0 0 auto; border-top: 1px solid var(--line); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: #fff; }
+    #orderBackdrop .ord-foot .modal-actions { margin: 0; }
+    .ord-sec { border: 1px solid #ece2d9; border-radius: 14px; padding: 12px 13px; margin-bottom: 13px; background: #fff; box-shadow: 0 1px 3px rgba(60,40,30,.04); }
+    .ord-sec-h { font-size: 14.5px; font-weight: 800; color: var(--brand-dark); margin: 0 0 11px; display: flex; align-items: center; gap: 3px; }
+    .ord-sec .ord-sel:last-child, .ord-sec .ord-flow2:last-child { margin-bottom: 0; }
+    .ord-sec .ord-flow2 { margin-bottom: 0; }
+    .ord-lock { background: #fbe9db; border: 1px solid #e7cdbf; color: #9a4a1a; border-radius: 12px; padding: 12px 13px; font-size: 14px; font-weight: 800; margin-bottom: 13px; line-height: 1.5; }
+    .od-dow { font-size: 11px; font-weight: 700; color: #7a6a5c; background: #efeae4; border-radius: 6px; padding: 1px 7px; margin-left: 7px; }
+    .od-in:disabled, .ord-selwrap select:disabled, .ord-cell.kg input:disabled { background: #f1efec; color: #8a7f77; -webkit-text-fill-color: #8a7f77; opacity: 1; }
+    .ord-usebtn:disabled { background: #f1efec; color: #8a7f77; cursor: default; }
+    /* 月曆第一層分類(雞肉管理 / 餅皮管理) */
+    .ck-catswitch { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin: 2px 0 13px; }
+    .ck-cat { display: flex; align-items: center; gap: 11px; text-align: left; background: #fff; border: 1.5px solid #e7ddd4; border-radius: 15px; padding: 13px 14px; cursor: pointer; transition: background .12s ease, border-color .12s ease, box-shadow .12s ease; }
+    .ck-cat .cat-ic { font-size: 25px; flex: 0 0 auto; }
+    .ck-cat .cat-tx { display: flex; flex-direction: column; min-width: 0; }
+    .ck-cat .cat-tx b { font-size: 16.5px; color: var(--ink); }
+    .ck-cat .cat-tx small { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .ck-cat:hover { border-color: #d9a689; }
+    .ck-cat.on { border-color: var(--brand); background: var(--brand); box-shadow: 0 5px 14px rgba(146,53,33,.2); }
+    .ck-cat.on .cat-tx b { color: #fff; }
+    .ck-cat.on .cat-tx small { color: #f5ddd0; }
+    /* 餅皮月曆格：每格＝9吋／12吋 合計(點看厚薄明細) */
+    .ck-dcell .ck-dough2 { display: flex; flex-direction: column; gap: 4px; margin-top: 7px; width: 100%; }
+    .ck-dcell .cd2 { display: flex; justify-content: center; align-items: baseline; gap: 5px; line-height: 1.15; white-space: nowrap; }
+    .ck-dcell .cd2 i { font-style: normal; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .ck-dcell .cd2 b { font-size: 19px; font-weight: 900; color: #9a4a1a; }
+    .ck-dcell .ck-dough2.est .cd2 b { color: #b07a4a; }
+    .ck-dparts .ck-line b { color: #9a4a1a; }
+    .ck-dparts.est .ck-line b { color: #b07a4a; }
+    .ck-dsold .ck-dparts .ck-line b { color: #9b928a; }
+    .ck-dcell .cd-empty { display: block; text-align: center; color: #cbbeb0; font-size: 17px; margin-top: 8px; }
+    @media (max-width: 480px) {
+      .ck-cat .cat-tx b { font-size: 15px; } .ck-cat .cat-tx small { font-size: 11px; }
+      .ck-cat { padding: 11px; gap: 8px; } .ck-cat .cat-ic { font-size: 22px; }
+      .ck-dcell .cd2 b { font-size: 18px; } .ck-dcell .cd2 i { font-size: 10.5px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 登入：員工編號＋PIN(依備料後台權限)；備用＝員工編號留空＋排班後台 PIN -->
+  <div id="pinGate" class="pin-gate">
+    <div class="pin-card">
+      <div class="brand-mark large-mark"><img src="icons/icon-192.svg" alt="蔡叔叔比薩屋" /></div>
+      <h1>備料預估管理</h1>
+      <p>請輸入員工編號與 PIN 碼</p>
+      <input id="pinNo" class="input big-input" type="text" autocomplete="off" autocapitalize="characters" placeholder="員工編號" />
+      <input id="pinInput" class="input big-input" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN 碼" style="margin-top:10px" />
+      <button id="pinSubmit" class="primary-btn full">進入</button>
+      <div id="pinError" class="form-error"></div>
+    </div>
+  </div>
+
+  <div id="app" class="hidden app-shell">
+    <div class="app-sidebar">
+      <div class="app-brand">
+        <div class="brand-mark"><img src="icons/icon-192.svg" alt="蔡叔叔比薩屋" /></div>
+        <div class="ab-text"><strong>蔡叔叔比薩屋</strong><span>備料預估管理</span></div>
+      </div>
+      <nav class="nav-rail">
+        <button type="button" data-view="home" class="nav-link active"><span class="ni">🏠</span>首頁</button>
+        <button type="button" data-view="calendar" class="nav-link"><span class="ni">📅</span>月曆</button>
+        <button type="button" data-view="records" class="nav-link"><span class="ni">📋</span>紀錄</button>
+        <button type="button" data-view="settings" class="nav-link"><span class="ni">⚙️</span>設定</button>
+      </nav>
+      <div class="ck-user" id="ckUser">
+        <button type="button" class="cu-btn" id="ckUserBtn"><span class="cu-ic">👤</span><b id="ckUserName">—</b><small id="ckUserRole"></small><i class="cu-caret">▾</i></button>
+        <button type="button" class="cu-out" id="ckLogout">登出</button>
+      </div>
+      <span id="ckSync" class="sync-badge init">◌ 初始化</span>
+    </div>
+
+    <main class="app-main">
+      <div class="ck-ro-banner hidden" id="ckRoBanner">👁 檢視模式：可以查看所有內容，但不能修改</div>
+      <!-- 首頁 -->
+      <section class="app-view" id="viewHome">
+        <div class="view-head"><h2>今日建議</h2></div>
+        <div id="homeCards" class="home-cards"></div>
+        <div class="home-actions">
+          <button class="edit-only primary-btn" id="ckOrderBtn">🛒 訂購雞肉</button>
+          <button class="edit-only forest-btn" id="ckUploadBtn">⬆ 上傳報表</button>
+        </div>
+      </section>
+
+      <!-- 月曆 -->
+      <section class="app-view hidden" id="viewCalendar">
+        <div class="view-head"><h2>月曆管理</h2></div>
+        <div class="ck-catswitch" id="ckCatSwitch">
+          <button type="button" class="ck-cat on" data-cat="chicken"><span class="cat-ic">🍗</span><span class="cat-tx"><b>雞肉管理</b><small>使用月曆・訂購月曆</small></span></button>
+          <button type="button" class="ck-cat" data-cat="dough"><span class="cat-ic">🍕</span><span class="cat-tx"><b>餅皮管理</b><small>餅皮月曆</small></span></button>
+        </div>
+        <div class="ck-bf-banner hidden" id="ckBackfillBanner">🧪 回填模式開啟中：訂購月曆可替過去的日子開訂購單。測試完請到「設定」關閉。</div>
+        <button type="button" class="ck-hint" id="ckHint">🔮 訂購建議</button>
+        <button type="button" class="ck-hint ck-hint-acc" id="ckChkAccBtn">📊 雞肉推估準確度：用目前參數回看近 14 天 ›</button>
+        <button type="button" class="ck-hint ck-hint-dough" id="ckDoughBtn">🍕 餅皮推估準確度：用目前參數回看近 14 天 ›</button>
+        <section class="panel" style="margin-top:14px">
+          <div class="ck-calswitch" id="ckCalSwitch">
+            <button type="button" class="on" data-mode="use">🗓 使用月曆</button>
+            <button type="button" data-mode="order">📦 訂購月曆</button>
+          </div>
+          <p class="ck-caltitle" id="ckCalTitle"></p>
+          <div class="employee-calendar-toolbar">
+            <button class="icon-btn" id="ckPrevMonth">‹</button>
+            <strong id="ckMonthLabel"></strong>
+            <button class="icon-btn" id="ckNextMonth">›</button>
+          </div>
+          <div class="weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+          <div id="ckGrid" class="employee-calendar-grid"></div>
+          <div class="calendar-legend" id="ckLegend"></div>
+        </section>
+      </section>
+
+      <!-- 紀錄 -->
+      <section class="app-view hidden" id="viewRecords">
+        <div class="view-head view-head-row"><div><h2>盤點填寫紀錄</h2><p>員工每天打烊填的剩餘量(誰、何時、填了什麼)</p></div><button class="edit-only primary-btn" id="recordsAdd">＋ 新增紀錄</button></div>
+        <div class="rec-month"><button class="icon-btn" id="recPrev" aria-label="上個月">‹</button><b id="recMonthLabel"></b><button class="icon-btn" id="recNext" aria-label="下個月">›</button></div>
+        <div class="rec-empty" id="recordsMsg"></div>
+        <div class="rec-wrap"><table class="rec-tbl" id="recordsTbl"></table></div>
+        <div class="rec-cards" id="recordsCards"></div>
+        <div class="view-actions"><button class="edit-only ghost-btn" id="recordsExport">⤓ 匯出 CSV</button></div>
+      </section>
+
+      <!-- 設定 -->
+      <section class="app-view hidden" id="viewSettings">
+        <div class="view-head"><h2>設定</h2></div>
+        <div class="set-group">
+          <div class="set-gh">推估與參數設定</div>
+          <button type="button" class="set-item" id="ckPredBtn"><span class="si-ic">🔮</span><span class="si-tx"><b>雞肉推估參數</b><small>多備比例、回算天數、推估方式</small></span><span class="si-ar">›</span></button>
+          <button type="button" class="set-item" id="ckPartsBtn"><span class="si-ic">⚖️</span><span class="si-tx"><b>雞肉單位轉換</b><small>份數對照部位、每支克數、批發代號</small></span><span class="si-ar">›</span></button>
+          <button type="button" class="set-item" id="ckPizzaBtn"><span class="si-ic">🍕</span><span class="si-tx"><b>餅皮推估參數</b><small>最低營業額、比例自動算</small></span><span class="si-ar">›</span></button>
+        </div>
+        <div class="set-group">
+          <div class="set-gh">月曆顯示</div>
+          <button type="button" class="set-item" id="ckTermBtn"><span class="si-ic">🌿</span><span class="si-tx"><b>節氣標記</b><small>選擇月曆上要標示的節氣(只是標示，不影響推估)</small></span><span class="si-ar">›</span></button>
+        </div>
+        <div class="set-group edit-only">
+          <div class="set-gh">供應商管理</div>
+          <button type="button" class="set-item edit-only" id="ckSupBtn"><span class="si-ic">🚚</span><span class="si-tx"><b>雞肉批發商</b><small>公休與臨時休市設定</small></span><span class="si-ar">›</span></button>
+        </div>
+        <div class="set-group edit-only">
+          <div class="set-gh">CSV、備份與還原</div>
+          <button type="button" class="set-item" id="ckExportCsvBtn"><span class="si-ic">⤓</span><span class="si-tx"><b>匯出 CSV</b><small>每日消耗／訂購明細</small></span><span class="si-ar">›</span></button>
+          <button type="button" class="set-item" id="ckBackupBtn"><span class="si-ic">💾</span><span class="si-tx"><b>備份／還原</b><small>整包匯出匯入</small></span><span class="si-ar">›</span></button>
+        </div>
+        <div class="set-group">
+          <button type="button" class="edit-only set-item" id="ckBackfillBtn"><span class="si-ic">🧪</span><span class="si-tx"><b>🧪 回填過去的訂購單：關閉</b><small>測試／補登用；只在這台裝置有效，用完請關閉</small></span><span class="si-ar">›</span></button>
+          <button type="button" class="set-item" id="ckGuideBtn"><span class="si-ic">📖</span><span class="si-tx"><b>使用說明</b></span><span class="si-ar">›</span></button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="nav-bottom">
+      <button type="button" data-view="home" class="active"><span class="ni">🏠</span><span>首頁</span></button>
+      <button type="button" data-view="calendar"><span class="ni">📅</span><span>月曆</span></button>
+      <button type="button" data-view="records"><span class="ni">📋</span><span>紀錄</span></button>
+      <button type="button" data-view="settings"><span class="ni">⚙️</span><span>設定</span></button>
+    </nav>
+  </div>
+
+  <!-- 使用說明彈窗 -->
+  <div id="guideBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(560px,100%)">
+      <div class="modal-head"><div><h3>📖 使用說明</h3><p>每天怎麼做、推估怎麼來、各頁在哪裡</p></div><button class="icon-btn" data-close="guideBackdrop">✕</button></div>
+      <div class="modal-body gd">
+
+        <div class="gd-sec">
+          <h4>🗓️ 每天這樣做</h4>
+          <div class="gd-step"><span class="gd-num">1</span><span class="tx"><b>打烊後上傳銷售報表</b>：在〈首頁〉按「⬆ 上傳報表」，上傳大麥系統下載的「餐點銷售狀況」Excel。系統會自動換算當天用掉的 🍗腿／🥩排／🪽翅，以及賣出的餅皮。</span></div>
+          <div class="gd-step"><span class="gd-num">2</span><span class="tx"><b>員工填打烊剩餘</b>：員工在班表系統的「今日打烊剩餘」填雞肉、餅皮剩多少(兩項分開送出)。有人漏填，管理者可在〈紀錄〉回填。</span></div>
+          <div class="gd-step"><span class="gd-num">3</span><span class="tx"><b>看今日建議、訂購雞肉</b>：〈首頁〉的「今日建議」會告訴你今天要不要訂雞肉、餅皮要備多少(今天公休就顯示下一個營業日，點卡片可看推估依據)。按「🛒 訂購雞肉」開訂購單，數字可以改，確認後存起來。也可以由員工在班表系統的「🛒 訂購雞肉」送出(只能改公斤)，後台會同步鎖定並記錄是誰訂的。</span></div>
+        </div>
+
+        <div class="gd-sec">
+          <h4>🍗 雞肉訂購單怎麼看</h4>
+          <div class="gd-tools">
+            <div class="gd-tool"><span class="k">① 訂購資訊</span><span>下單日、批發商、到貨日、使用日。到貨日、使用日會照批發商的公休與臨時休市自動帶入，也可以自己改。</span></div>
+            <div class="gd-tool"><span class="k">② 需求與要訂(隻)</span><span>每個使用日要用多少隻，預設是系統預估，可以自己改；展開可看預估的依據，以及「參考：上次 11/12(四) 炸烤的實際叫貨」。下面接著算：合計需求(使用日 2 天以上才顯示) − 扣剩餘 ＝ 要訂。剩餘只在第一個使用日扣，可取消勾選。下單日當天已填打烊剩餘(打烊後下單)就扣當天的，否則扣前一個營業日的(例如「扣剩餘・11/15(日) 打烊剩餘」)；沒有紀錄就不扣。過了 20:00 還沒填當天剩餘時不扣，會提醒先填。</span></div>
+            <div class="gd-tool"><span class="k">③ 實際訂購(公斤)</span><span>批發商用公斤叫貨，系統自動把隻數換成整數公斤(例如 腿(D5) 4 公斤)，可以微調，下面會顯示約等於幾隻。</span></div>
+            <div class="gd-tool"><span class="k">員工頁訂購</span><span>排班後台把員工的備料角色設成「雞肉」或「餅皮＋雞肉」，員工專區就會出現「🛒 訂購雞肉」：顯示今天起 2 個可下單日，今天的單只能改公斤再送出；下次的只能預覽。今天批發商休市時會請他聯絡管理者。送出後兩邊都鎖定，後台看得到訂購人。</span></div>
+            <div class="gd-tool"><span class="k">直接開頁籤的網址</span><span>員工專區網址後面加 <b>?go=stock</b>(今日打烊剩餘)、<b>?go=dough</b>(餅皮推估)、<b>?go=chicken</b>(訂購雞肉)，登入後會直接跳到那一頁，可做成 QR code 貼在店裡。權限照舊：沒有餅皮／雞肉權限的人會停在我的班表。</span></div>
+            <div class="gd-tool"><span class="k">確認後鎖定</span><span>按「確認已訂購」後只能看、不能改；真的要重開，可在最下方刪除。</span></div>
+          </div>
+        </div>
+
+        <div class="gd-sec">
+          <h4>🔮 推估怎麼來的</h4>
+          <div class="gd-tools">
+            <div class="gd-tool"><span class="k">雞肉</span><span>平日(二三四)／週五／假日(六日＋國定)分開，取「回算天數」內同日型實際用掉的量，用平均等方法算，再乘上多備比例。都在〈設定 → 雞肉推估參數〉。</span></div>
+            <div class="gd-tool"><span class="k">餅皮</span><span>取近幾次同星期的平均賣出量(預設 2 次)。六日／假日另外用「最低營業額」反推最少要備，兩者取多的。都在〈設定 → 餅皮推估參數〉。</span></div>
+            <div class="gd-tool"><span class="k">推估準確度</span><span>〈月曆〉上方的「📊 雞肉推估準確度」和「🍕 餅皮推估準確度」，用<b>目前的參數設定</b>回推近 14 天，和實際比較，用來評估要不要調參數。每天要備多少請看首頁卡片，或月曆點那一天。</span></div>
+          </div>
+        </div>
+
+        <div class="gd-sec">
+          <h4>📅 月曆怎麼看</h4>
+          <div class="gd-tip" style="margin:0 0 8px">上方先選「🍗 雞肉管理」或「🍕 餅皮管理」。雞肉再分「使用月曆」和「訂購月曆」。</div>
+          <div class="gd-legend">
+            <div class="gd-leg-row"><span class="gd-sw" style="background:#f3faf5;border-color:#cfe6d7"></span>使用月曆：已上傳銷售的日子，顯示當天用掉的腿／排／翅</div>
+            <div class="gd-leg-row"><span class="gd-sw" style="background:#fff;border-color:#e0a884;border-style:dashed"></span>訂購月曆：「可下單」「建議下單」的日子可以開訂購單；店休的週一也可能可以下單</div>
+            <div class="gd-leg-row"><span class="gd-sw" style="background:#fff3d6;border-color:#f1dca8"></span>🚚休市：批發商臨時休市，可改訂其他廠商</div>
+            <div class="gd-leg-row"><span class="gd-sw" style="background:#f3f0ed;border-color:#e4ddd7"></span>灰底：公休</div>
+            <div class="gd-leg-row"><span class="gd-sw" style="background:#fff;border-color:#eee;color:#b3261e;display:grid;place-items:center;font-weight:800;font-size:12px">15</span>紅字：假日／國定假日</div>
+            <div class="gd-leg-row">👉 <span>點任何一天可看明細；餅皮月曆有剩餘盤點才顯示製作量，沒有就顯示灰色的賣出量。</span></div>
+          </div>
+        </div>
+
+        <div class="gd-sec">
+          <h4>🧭 各頁在哪裡</h4>
+          <div class="gd-tools">
+            <div class="gd-tool"><span class="k">🔑 登入與權限</span><span>用<b>員工編號＋PIN</b>登入(和員工專區同一組)。權限在〈排班後台 → 員工 → 編輯 → 備料後台權限〉設定：<b>管理者</b>可上傳報表、訂購、改設定；<b>檢視者</b>只能查看，不能匯出 CSV 或備份(畫面上方會顯示「👁 檢視模式」)；<b>無</b>則不能登入。目前登入的人和「登出」在左側選單最下面(手機在上方右邊，點名字)。</span></div>
+            <div class="gd-tool"><span class="k">🏠 首頁</span><span>今日建議、訂購雞肉、上傳報表。</span></div>
+            <div class="gd-tool"><span class="k">📅 月曆</span><span>雞肉使用／訂購月曆、餅皮月曆、推估準確度。月曆上綠色小標(例如「🍂秋分」)是節氣，只是標示；要標哪些節氣在〈設定 → 節氣標記〉勾選，預設是大暑、秋分、立冬、大寒。</span></div>
+            <div class="gd-tool"><span class="k">📋 紀錄</span><span>員工打烊剩餘的填寫紀錄，可切換月份、新增(回填)、更正，會保留修改紀錄。</span></div>
+            <div class="gd-tool"><span class="k">⚙️ 設定</span><span>雞肉推估參數、雞肉單位轉換、餅皮推估參數、雞肉批發商、匯出 CSV、備份／還原。</span></div>
+          </div>
+        </div>
+
+        <details class="gd-adv">
+          <summary>📐 詳細計算規則(雞肉、餅皮怎麼算)</summary>
+
+          <h5>🍗 雞肉推估</h5>
+          <ol class="gd-rules">
+            <li><b>實際用量</b>：上傳報表時，依〈雞肉單位轉換〉把每個品項的份數換成腿／排／翅(份數 × 每份幾支)，存成那天的實際用量。</li>
+            <li><b>日型</b>：六日與有營業的國定假日＝<b>假日</b>；週五＝<b>週五</b>；其他營業日(二三四)＝<b>平日</b>。公休不推估。三種日型分開算。</li>
+            <li><b>取樣</b>：從<b>下單日</b>往回「回算天數」(14～60 天)，<b>不含下單日當天</b>，挑同日型、有上傳報表的日子。下單日在未來時，用今天往回。</li>
+            <li><b>基準</b>(腿、排、翅各自算)：
+              <div class="gd-f">平均＝加總 ÷ 天數<br>中位數＝由小到大排，取中間值(偶數天取中間兩天的平均)<br>近期加權＝越新越重：最新的乘 N、次新乘 N−1…最舊乘 1，加總後 ÷ 權重總和<br>同型日最大＝取最大值</div></li>
+            <li><b>預估</b>＝基準 × 多備比例(1.00～1.30)，<b>四捨五入到整數隻</b>。</li>
+            <li><b>參數版本</b>：用<b>下單日當天有效</b>的推估參數版本計算，之後改參數不會改到過去的預估。〈推估準確度〉才用目前設定。</li>
+            <li><b>下單／到貨／使用日</b>(預設，可自己改)：批發商有上班才能下單；到貨日要店有營業、批發商有上班，且前一天批發商也有上班(前一天下單、隔天到)；使用日要店有營業，且至少在到貨隔天(醃一天)。</li>
+            <li><b>訂購數量</b>：
+              <div class="gd-f">合計需求＝各使用日需求加總<br>扣剩餘＝下單日當天有打烊剩餘就用當天(打烊後下單)；否則用前一個營業日的打烊剩餘(開店前／營業中下單，或下單日店休)<br>下單日是今天、已過 20:00 但還沒填當天剩餘 → 不扣，提醒先填<br>該用的那天沒有紀錄 → 不扣(不當作 0)，另外列出最近一筆的日期參考<br>要訂＝合計需求 − 剩餘(最少 0)</div></li>
+            <li><b>公斤換算</b>：
+              <div class="gd-f">建議公斤＝隻數 × 每支克數 ÷ 1000，<b>四捨五入到整數公斤</b>(至少 1 公斤)<br>公斤換回隻數＝公斤 × 1000 ÷ 每支克數，<b>無條件捨去</b>(保守不高估)</div></li>
+            <li><b>日期明細的順序</b>(跟訂購的想法一樣)：預估要用 → 扣掉的剩餘 → 應訂 → 實際叫貨 → 可用量 → 實際賣 → 差額。
+              <div class="gd-f">扣掉的剩餘：依日期先用，第一個使用日先扣，不夠才扣下一天<br>應訂＝需求 − 扣掉的剩餘<br>實際叫貨＝公斤換回的總隻數，多個使用日時<b>依各天應訂比例分攤</b>(累計後四捨五入，各天加總剛好等於總隻數)<br>可用量＝實際叫貨 ＋ 扣掉的剩餘<br>差額＝可用量 − 實際賣：正＝有剩、負＝不夠</div></li>
+            <li><b>推估準確度</b>：近 14 天，用<b>目前設定</b>、只用那天之前的資料回推。差額＝推估 − 實際用(四捨五入)：小於 0＝<b>估少</b>；多出超過實際用的 15%＝<b>估多</b>；其餘＝<b>差不多</b>。腿、排、翅分開判斷。</li>
+          </ol>
+
+          <h5>🍕 餅皮推估</h5>
+          <ol class="gd-rules">
+            <li><b>賣出與製作</b>：賣出＝報表裡 9吋／12吋 厚片、薄片的數量。製作量＝賣出 ＋ 打烊剩餘；沒填剩餘的日子不算製作量。</li>
+            <li><b>平均賣出</b>：那天之前最近 N 個<b>同星期</b>(N＝〈參考近幾次同星期〉，1～8，預設 2)；有營業的國定假日比照週日。四種餅皮各自平均，<b>四捨五入</b>。</li>
+            <li><b>平日</b>：建議量＝平均賣出。</li>
+            <li><b>六日／國定假日</b>：另外用最低營業額反推「最少要備」，四種餅皮<b>各自取兩者較大的</b>：
+              <div class="gd-f">比薩營業額＝最低營業額 × 比薩佔全店%<br>9吋營業額＝比薩營業額 × 9吋佔比薩%；12吋營業額＝其餘<br>9吋個數＝9吋營業額 ÷ 9吋均價；12吋個數＝12吋營業額 ÷ 12吋均價(先不取整)<br>9吋厚＝9吋個數 × 9吋厚片%、9吋薄＝9吋個數 × (100% − 厚片%)，各自<b>四捨五入</b>；12吋同理</div></li>
+            <li><b>自動比例</b>：那天往回 4 週(不含當天)的<b>六日＋有營業的國定假日</b>報表，全部金額、個數<b>加總後再相除</b>(加權平均)；比例四捨五入到整數 %，均價四捨五入到整數元。少於 4 天有報表時，改用存檔的數字。
+              <div class="gd-f">比薩佔全店＝(9吋金額 ＋ 12吋金額) ÷ 全店營業額<br>9吋佔比薩＝9吋金額 ÷ 比薩金額<br>均價＝金額 ÷ 個數<br>厚片比例＝厚片賣出 ÷ (厚片 ＋ 薄片)</div>
+              在〈餅皮推估參數 → 進階〉取消勾選「自動」，該項就改用你填的數字。</li>
+            <li><b>預估比薩營業額</b>(只在六日／假日顯示)＝9吋個數 × 9吋均價 ＋ 12吋個數 × 12吋均價；換算全店＝比薩營業額 ÷ 比薩佔比，四捨五入。</li>
+            <li><b>參數版本</b>：過去的日子用<b>那天有效</b>的比薩參數版本(第一次修改前＝系統預設值)，平均賣出和自動比例也從那天往回算，所以不會變。今天以後用最新設定。</li>
+            <li><b>推估準確度</b>：近 14 天，用<b>目前設定</b>回推；9吋、12吋(厚＋薄合計)分開判斷，規則同雞肉(小於 0＝估少；超過賣出的 15%＝估多)。</li>
+          </ol>
+        </details>
+
+        <div class="gd-tip">🍗 腿(紅)　🥩 排(綠)　🪽 翅(黃)<br>資料會<b>自動雲端同步</b>，換手機或平板都看得到；出現〈✓ 已同步〉就表示存好了。</div>
+        <div class="modal-actions"><button class="primary-btn" data-close="guideBackdrop">知道了</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 上傳銷售彈窗 -->
+  <div id="uploadBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(560px,100%)">
+      <div class="modal-head"><div><h3>上傳銷售報表</h3><p>選門市「餐點銷售狀況」匯出Excel → 自動換算部位 → 儲存</p></div><button class="icon-btn" data-close="uploadBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div class="ck-fetch">
+          <p class="ck-fetch-h">① 先去『大麥智能餐飲系統』下載報表</p>
+          <button class="secondary-btn full" id="ckOpenReport">🔗 開啟『大麥智能餐飲系統』銷售報表</button>
+          <p class="hint">將自動帶入 <b id="ckReportDate">—</b> 的銷售報表。開啟後請點上方「<b>餐點銷售狀況</b>」分頁 → 匯出，再回來上傳；登入／驗證碼請在該頁完成。</p>
+        </div>
+        <div class="ck-drop" id="uploadDrop">
+          <div class="ico">📄⬆️</div>
+          <p>② 點這裡選剛下載的「餐點銷售」Excel</p>
+          <small>只讀雞肉品項的「銷售數量(含套餐＋單售)」；原始檔不會儲存</small>
+        </div>
+        <div id="uploadResult"></div>
+        <input type="file" id="ckFile" accept=".xlsx,.xls" class="hidden" />
+      </div>
+    </div>
+  </div>
+
+  <!-- 訂購雞肉彈窗 -->
+  <div id="orderBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(470px,100%)">
+      <div class="modal-head"><div><h3>訂購雞肉</h3><p id="ordHeadSub">下單</p></div><span class="ord-status" id="ordStatus"></span><button class="icon-btn" data-close="orderBackdrop">✕</button></div>
+      <div class="modal-body ck-form ord-body">
+        <div class="ord-lock hidden" id="ordLockBanner">🔒 這張訂單已確認訂購，僅供檢視、不可修改(保留原始紀錄)。如需重開，可在最下方刪除。</div>
+
+        <section class="ord-sec">
+          <div class="ord-sec-h"><b class="ord-step">①</b> 訂購資訊</div>
+          <div class="ord-sel"><span class="ord-k">下單日</span><div class="ord-selwrap"><span class="ord-val" id="ordOrderDay"></span></div></div>
+          <div class="ord-sel"><span class="ord-k">批發商</span><div class="ord-selwrap"><select class="input" id="ordSupplier"></select></div></div>
+          <div class="ord-sel"><span class="ord-k">到貨日</span><div class="ord-selwrap"><select class="input" id="ordDelivery"></select></div></div>
+          <div class="ord-sel"><span class="ord-k">使用日</span><button type="button" class="ord-usebtn" id="ordUseBtn">請選使用日 ▾</button></div>
+          <div class="ord-deliver" id="ordDeliverLine"></div>
+        </section>
+
+        <section class="ord-sec">
+          <div class="ord-sec-h"><b class="ord-step">②</b> 需求與要訂(隻)</div>
+          <div class="od-head"><span class="od-hd">使用日</span><span>🍗腿(隻)</span><span>🥩排(隻)</span><span>🪽翅(隻)</span></div>
+          <div id="ordRows"></div>
+          <div class="ord-sum" id="ordSumTbl"></div>
+          <div class="ord-stocknote" id="ordStockNote"></div>
+        </section>
+
+        <section class="ord-sec">
+          <div class="ord-sec-h"><b class="ord-step">③</b> 實際訂購(公斤)</div>
+          <div class="ck-num3">
+            <label class="ord-cell kg"><span>🍗 <b id="lblKgleg">D5</b></span><input class="input" type="number" inputmode="numeric" min="0" placeholder="0" id="orderKgleg" /><small class="kg-pcs" id="kgPcsleg"></small></label>
+            <label class="ord-cell kg"><span>🥩 <b id="lblKgfil">TS4</b></span><input class="input" type="number" inputmode="numeric" min="0" placeholder="0" id="orderKgfil" /><small class="kg-pcs" id="kgPcsfil"></small></label>
+            <label class="ord-cell kg"><span>🪽 <b id="lblKgwing">W6</b></span><input class="input" type="number" inputmode="numeric" min="0" placeholder="0" id="orderKgwing" /><small class="kg-pcs" id="kgPcswing"></small></label>
+          </div>
+        </section>
+      </div>
+      <div class="ord-foot">
+        <div class="modal-actions" id="ordActions"><button class="edit-only primary-btn" id="ordConfirmBtn">確認已訂購</button></div>
+        <button type="button" class="edit-only ord-delbtn hidden" id="ordDeleteBtn">🗑 刪除這張訂單</button>
+        <button type="button" class="primary-btn full hidden" id="ordCloseBtn" data-close="orderBackdrop">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 使用日多選面板 -->
+  <div id="useDayBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(420px,100%)">
+      <div class="modal-head"><div><h3>選擇使用日</h3><p>至多 4 天・自動排除公休</p></div><button class="icon-btn" data-close="useDayBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div id="useDayList" class="ud-list"></div>
+        <div class="modal-actions"><span class="ud-cnt">已選 <b id="useDayCnt">0</b> 天</span><button class="primary-btn" id="useDaySave">確定</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 推估設定彈窗(緩衝倍率／回算天數／推估方式) -->
+  <div id="predBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(440px,100%)">
+      <div class="modal-head"><div><h3>推估設定</h3><p>決定「系統建議」怎麼算(同時影響叫貨與首頁推估)</p></div><button class="icon-btn" data-close="predBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div class="ps-row">
+          <div class="ps-k">🛟 多備比例 <select class="ps-sel" id="psBuffer"><option value="1.00">+0%</option><option value="1.05">+5%</option><option value="1.10">+10%</option><option value="1.15">+15%</option><option value="1.20">+20%</option><option value="1.25">+25%</option><option value="1.30">+30%</option></select></div>
+          <div class="ps-d">在推估量上<b>再多準備一些</b>的保險；+20% ＝ 多抓兩成。平時夠用可設 +0%。</div>
+        </div>
+        <div class="ps-row">
+          <div class="ps-k">📅 回算天數 <select class="ps-sel" id="psWindow"><option value="14">14 天</option><option value="21">21 天</option><option value="28">28 天</option><option value="35">35 天</option><option value="42">42 天</option><option value="49">49 天</option><option value="56">56 天</option><option value="60">60 天</option></select></div>
+          <div class="ps-d">取樣「今天往回幾天」內的<b>同型日</b>(平日／週五／假日分開算)。14～60 天、每 7 天一階；短＝反映近況、長＝較穩。</div>
+        </div>
+        <div class="ps-row">
+          <div class="ps-k">📈 推估方式 <select class="ps-sel" id="psMethod"><option value="avg">平均</option><option value="median">中位數</option><option value="weighted">近期加權</option><option value="max">同型日最大</option></select></div>
+          <div class="ps-d">平均(預設)／中位數(最穩)／近期加權(越近越重)／同型日最大(最保守)。</div>
+        </div>
+        <div class="ps-hist-h">版本紀錄(回頭看過去日子的預估，會用當時的版本計算)</div>
+        <div class="ps-hist" id="psHist"></div>
+        <div class="modal-actions"><button class="ghost-btn" data-close="predBackdrop">取消</button><button class="edit-only primary-btn" id="psSave">儲存設定</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 批發商休息設定彈窗 -->
+  <div id="supBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(460px,100%)">
+      <div class="modal-head"><div><h3>🚚 批發商設定</h3><p>可設多家，各自設公休／臨時休市；選一家為「預設」叫貨對象</p></div><button class="icon-btn" data-close="supBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div id="supList"></div>
+        <button type="button" class="edit-only secondary-btn sup-addsup" id="supAddSupplierBtn">＋ 新增批發商</button>
+        <div class="sup-prev" id="supPrev"></div>
+        <div class="modal-actions"><button class="ghost-btn" data-close="supBackdrop">取消</button><button class="edit-only primary-btn" id="supSave">儲存設定</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 點某天明細彈窗 -->
+  <div id="detailBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(520px,100%)">
+      <div class="modal-head"><div><h3 id="detailTitle"></h3><p>預估／實際叫貨／實際賣 對比</p></div><button class="icon-btn" data-close="detailBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div id="detailBody"></div>
+        <div class="modal-actions"><button class="ghost-btn" id="detailEditOrder">📝 訂購雞肉</button><button class="primary-btn" data-close="detailBackdrop">關閉</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 每日提醒彈窗(叫貨＋上傳) -->
+  <div id="remindBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(440px,100%)">
+      <div class="modal-head"><div><h3>今天提醒 · <span id="remindDate"></span></h3></div><button class="icon-btn" data-close="remindBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div id="remindBody"></div>
+        <button type="button" class="rm-later" data-close="remindBackdrop">稍後再說</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 匯出 CSV 彈窗 -->
+  <div id="csvBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(420px,100%)">
+      <div class="modal-head"><div><h3>匯出 CSV(每日彙總)</h3><p>選一個月份，下載當月每天的消耗／叫貨／差額</p></div><button class="icon-btn" data-close="csvBackdrop">✕</button></div>
+      <div class="modal-body">
+        <label class="field"><span>月份</span><input class="input" type="month" id="csvMonth" /></label>
+        <div class="modal-actions"><button class="ghost-btn" data-close="csvBackdrop">取消</button><button class="primary-btn" id="csvDownload">⤓ 下載該月 CSV</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 備份／還原彈窗 -->
+  <div id="backupBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(440px,100%)">
+      <div class="modal-head"><div><h3>備份／還原</h3><p>把備料後台的所有資料整包匯出／匯入</p></div><button class="icon-btn" data-close="backupBackdrop">✕</button></div>
+      <div class="modal-body">
+        <p class="bk-note">備份會把<b>所有月份的銷售、打烊剩餘、訂購單與設定</b>存成一個檔，可保存備用或日後匯入還原。員工與公休日等資料在排班平台的「完整備份」裡。</p>
+        <button type="button" class="bk-btn" id="backupExport">⬇ 匯出備份檔(JSON)</button>
+        <button type="button" class="edit-only bk-btn" id="backupImport">⬆ 匯入備份檔…</button>
+        <input type="file" id="backupFile" accept=".json,application/json" class="hidden" />
+        <p class="bk-warn">⚠ 匯入會以備份檔「完全覆蓋」目前備料後台的資料，備份裡沒有的月份會被刪除，無法復原。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 部位對照設定彈窗 -->
+  <div id="partsBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(440px,100%)">
+      <div class="modal-head"><div><h3>部位對照設定</h3><p>每份品項換算幾個生雞部位(炸、烤共用)</p></div><button class="icon-btn" data-close="partsBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div class="pm-sec-h"><b class="ord-step">①</b> 份數 → 部位</div>
+        <table class="pm">
+          <thead><tr><th>品項</th><th>🍗 腿</th><th>🥩 排</th><th>🪽 翅</th></tr></thead>
+          <tbody>
+            <tr><td>2 塊</td><td><input id="pm_2_leg" inputmode="numeric"></td><td><input id="pm_2_fil" inputmode="numeric"></td><td><input id="pm_2_wing" inputmode="numeric"></td></tr>
+            <tr><td>3 塊</td><td><input id="pm_3_leg" inputmode="numeric"></td><td><input id="pm_3_fil" inputmode="numeric"></td><td><input id="pm_3_wing" inputmode="numeric"></td></tr>
+            <tr><td>5 塊</td><td><input id="pm_5_leg" inputmode="numeric"></td><td><input id="pm_5_fil" inputmode="numeric"></td><td><input id="pm_5_wing" inputmode="numeric"></td></tr>
+            <tr><td>9 塊</td><td><input id="pm_9_leg" inputmode="numeric"></td><td><input id="pm_9_fil" inputmode="numeric"></td><td><input id="pm_9_wing" inputmode="numeric"></td></tr>
+            <tr><td>6塊雞翅</td><td><input id="pm_wing_leg" inputmode="numeric"></td><td><input id="pm_wing_fil" inputmode="numeric"></td><td><input id="pm_wing_wing" inputmode="numeric"></td></tr>
+          </tbody>
+        </table>
+        <p class="pm-note">※ 改完之後，<b>之後上傳</b>的報表會用新的對照換算；已存的歷史數字不會變動。</p>
+
+        <div class="pm-sec2">
+          <div class="pm-sec-h"><b class="ord-step">②</b> 採購換算</div>
+          <div class="pm-sec-sub">每支約幾公克、批發商代號(叫貨時換算公斤用)</div>
+          <div class="pu-head"><span class="h1">部位</span><span class="h2">代號</span><span class="h3">每支約(克)</span></div>
+          <div class="pu-row"><span class="pl">🍗 雞腿</span><input class="pu-in" id="pu_leg_code" autocomplete="off"><input class="pu-in g" id="pu_leg_g" inputmode="numeric"><span class="pu-u">克</span></div>
+          <div class="pu-row"><span class="pl">🥩 雞排</span><input class="pu-in" id="pu_fil_code" autocomplete="off"><input class="pu-in g" id="pu_fil_g" inputmode="numeric"><span class="pu-u">克</span></div>
+          <div class="pu-row"><span class="pl">🪽 雞翅</span><input class="pu-in" id="pu_wing_code" autocomplete="off"><input class="pu-in g" id="pu_wing_g" inputmode="numeric"><span class="pu-u">克</span></div>
+          <p class="pm-note">※ 只影響<b>之後</b>的叫貨換算；已存的歷史叫貨公斤不會變動。</p>
+        </div>
+
+        <div class="pm-hist">
+          <div class="pm-hist-title">版本紀錄(點可唯讀查看該版的①＋②)</div>
+          <div id="pmHistList"></div>
+        </div>
+        <div class="modal-actions"><button class="edit-only danger-btn" id="partsReset" style="margin-right:auto">恢復預設值</button><button class="ghost-btn" data-close="partsBackdrop">取消</button><button class="edit-only primary-btn" id="partsSave">儲存設定</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 餅皮推估檢視彈窗(管理者) -->
+  <div id="doughBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(560px,100%)">
+      <div class="modal-head"><div><h3>🍕 餅皮推估準確度</h3><p>用目前的參數設定，回推近 14 天的推估和實際比較</p></div><button class="icon-btn" data-close="doughBackdrop">✕</button></div>
+      <div class="modal-body" id="doughBody">
+        <div class="dg-sec-h">近 14 天(9吋／12吋分開看，點日期看明細)</div>
+        <div id="doughAcc"></div>
+        <div id="doughRecent" class="dg-recent"></div>
+        <div class="modal-actions"><button class="primary-btn" data-close="doughBackdrop">關閉</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 餅皮某天明細(推估/製作/實際賣/剩餘/差額) -->
+  <!-- 雞肉推估準確度(管理者) -->
+  <div id="chkAccBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(560px,100%)">
+      <div class="modal-head"><div><h3>📊 雞肉推估準確度</h3><p id="chkAccSetting"></p></div><button class="icon-btn" data-close="chkAccBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div class="dg-sec-h">近 14 天(腿／排／翅分開看)</div>
+        <div id="chkAccSum"></div>
+        <div class="dg-sec-h" style="margin-top:14px">每天差額(推估−實際用，點看明細)</div>
+        <div id="chkAccList" class="dg-recent"></div>
+        <div class="modal-actions"><button class="primary-btn" data-close="chkAccBackdrop">關閉</button></div>
+      </div>
+    </div>
+  </div>
+  <div id="chkAccDetBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(460px,100%)">
+      <div class="modal-head"><div><h3 id="chkAccDetTitle"></h3><p>雞肉推估 vs 實際</p></div><button class="icon-btn" data-close="chkAccDetBackdrop">✕</button></div>
+      <div class="modal-body"><div id="chkAccDetBody"></div>
+        <div class="modal-actions"><button class="primary-btn" data-close="chkAccDetBackdrop">關閉</button></div>
+      </div>
+    </div>
+  </div>
+  <div id="doughDetBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(460px,100%)">
+      <div class="modal-head"><div><h3 id="doughDetTitle"></h3><p>餅皮建議量與推估依據</p></div><button class="icon-btn" data-close="doughDetBackdrop">✕</button></div>
+      <div class="modal-body"><div id="doughDetBody"></div>
+        <div class="modal-actions"><button class="primary-btn" data-close="doughDetBackdrop">關閉</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理者更正盤點彈窗(保留修改紀錄) -->
+  <div id="stockEditBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(440px,100%)">
+      <div class="modal-head"><div><h3 id="seTitle">更正盤點</h3><p id="seSub">管理者更正；會保留修改紀錄</p></div><button class="icon-btn" data-close="stockEditBackdrop">✕</button></div>
+      <div class="modal-body">
+        <label class="se-date-row hidden" id="seDateRow"><span>盤點日期</span><input class="input" id="seDate" type="date" /></label>
+        <div class="se-note hidden" id="seNote"></div>
+        <label class="se-sec se-part"><input type="checkbox" id="seChkOn" /> 🍗 剩餘雞肉(隻)</label>
+        <div class="ck-num3" id="seChkBox">
+          <label class="ord-cell"><span>🍗 腿</span><input class="input" id="seLeg" type="number" inputmode="numeric" min="0" /></label>
+          <label class="ord-cell"><span>🥩 排</span><input class="input" id="seFil" type="number" inputmode="numeric" min="0" /></label>
+          <label class="ord-cell"><span>🪽 翅</span><input class="input" id="seWing" type="number" inputmode="numeric" min="0" /></label>
+        </div>
+        <label class="se-sec se-part"><input type="checkbox" id="seDghOn" /> 🍕 剩餘餅皮(片)</label>
+        <div class="stock-pz" id="seDghBox">
+          <div class="pz-head"><span class="pz-lbl"></span><span>厚片</span><span>薄片</span></div>
+          <div class="pz-row"><span class="pz-lbl">9 吋</span><input class="input" id="seT9" type="number" inputmode="numeric" min="0" /><input class="input" id="seS9" type="number" inputmode="numeric" min="0" /></div>
+          <div class="pz-row"><span class="pz-lbl">12 吋</span><input class="input" id="seT12" type="number" inputmode="numeric" min="0" /><input class="input" id="seS12" type="number" inputmode="numeric" min="0" /></div>
+        </div>
+        <div class="se-hist" id="seHist"></div>
+        <div class="modal-actions"><button class="ghost-btn" data-close="stockEditBackdrop">取消</button><button class="edit-only primary-btn" id="seSave">儲存更正</button></div>
+        <button type="button" class="edit-only ord-delbtn hidden" id="seDelete">🗑 刪除這筆紀錄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 比薩餅皮參數設定彈窗 -->
+  <!-- 節氣標記 -->
+  <div id="termBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(460px,100%)">
+      <div class="modal-head"><div><h3>🌿 節氣標記</h3><p>勾選的節氣會標在備料後台的月曆上(只是標示，不影響推估)</p></div><button class="icon-btn" data-close="termBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div id="termList"></div>
+        <div class="hint" style="margin-top:10px">日期依天文計算(台灣時間)，每年可能差一天，系統會自動對應；目前涵蓋 2025～2040 年。</div>
+        <div class="modal-actions"><button class="ghost-btn" data-close="termBackdrop">取消</button><button class="edit-only primary-btn" id="termSave">儲存</button></div>
+      </div>
+    </div>
+  </div>
+  <div id="pizzaBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(480px,100%)">
+      <div class="modal-head"><div><h3>🍕 比薩餅皮參數</h3><p>六日／假日推估的底線與拆分；餅皮推估會用到</p></div><button class="icon-btn" data-close="pizzaBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div class="pz-grp pz-grp-main">
+          <div class="pz-grp-h">推估方式</div>
+          <div class="pz-field"><label>參考近幾次同星期</label><div class="pz-inwrap"><input class="input pz-in" id="pz_samples" inputmode="numeric"><span class="pz-suf">次</span></div></div>
+          <p class="pz-note">平日與六日／假日都以「近幾次同星期的<b>平均銷售量</b>」為基準，預設 2 次(可設 1~8)。</p>
+        </div>
+        <div class="pz-grp pz-grp-main">
+          <div class="pz-grp-h">六日／假日 的底線</div>
+          <div class="pz-field"><label>目標最低營業額</label><div class="pz-inwrap"><span class="pz-pre">$</span><input class="input pz-in" id="pz_minRev" inputmode="numeric"></div></div>
+          <p class="pz-note">六日／假日會以「不低於這個營業額」反推最少要備多少餅皮；兩者取較大的。<b>其餘比例與均價都由近 4 週假日的報表自動計算</b>，不用手動填。</p>
+        </div>
+        <div class="pz-auto-sum" id="pzAutoSummary"></div>
+        <div class="pz-prev" id="pzPrev"></div>
+        <details class="pz-adv" id="pzAdv">
+          <summary>⚙ 進階：手動覆寫自動比例</summary>
+          <p class="pz-note" style="margin:10px 0 4px">以下比例預設全部「自動」(依近 4 週週六、週日與國定假日的報表，不含今天)。只有特殊情況才取消勾選、改成手動指定。</p>
+          <div class="pz-field"><label>比薩佔全店<input type="checkbox" id="pz_pizzaShareAuto" class="pz-ck"><span class="pz-cklbl">自動</span></label><div class="pz-inwrap"><input class="input pz-in" id="pz_pizzaShare" inputmode="numeric"><span class="pz-suf">%</span></div></div>
+          <p class="pz-hint" id="pz_pizzaShare_hint"></p>
+          <div class="pz-field"><label>9吋佔比薩<input type="checkbox" id="pz_share9Auto" class="pz-ck"><span class="pz-cklbl">自動</span></label><div class="pz-inwrap"><input class="input pz-in" id="pz_share9" inputmode="numeric"><span class="pz-suf">%</span></div></div>
+          <p class="pz-hint" id="pz_share9_hint"></p>
+          <div class="pz-field"><label>9吋均價<input type="checkbox" id="pz_avg9Auto" class="pz-ck"><span class="pz-cklbl">自動</span></label><div class="pz-inwrap"><span class="pz-pre">$</span><input class="input pz-in" id="pz_avg9" inputmode="numeric"></div></div>
+          <p class="pz-hint" id="pz_avg9_hint"></p>
+          <div class="pz-field"><label>12吋均價<input type="checkbox" id="pz_avg12Auto" class="pz-ck"><span class="pz-cklbl">自動</span></label><div class="pz-inwrap"><span class="pz-pre">$</span><input class="input pz-in" id="pz_avg12" inputmode="numeric"></div></div>
+          <p class="pz-hint" id="pz_avg12_hint"></p>
+          <div class="pz-field"><label>9吋 厚片比例<input type="checkbox" id="pz_thick9Auto" class="pz-ck"><span class="pz-cklbl">自動</span></label><div class="pz-inwrap"><input class="input pz-in" id="pz_thick9" inputmode="numeric"><span class="pz-suf">%</span></div></div>
+          <p class="pz-hint" id="pz_thick9_hint"></p>
+          <div class="pz-field"><label>12吋 厚片比例<input type="checkbox" id="pz_thick12Auto" class="pz-ck"><span class="pz-cklbl">自動</span></label><div class="pz-inwrap"><input class="input pz-in" id="pz_thick12" inputmode="numeric"><span class="pz-suf">%</span></div></div>
+          <p class="pz-hint" id="pz_thick12_hint"></p>
+          <p class="pz-note">鬆厚＝厚片、薄脆＝薄片；薄片比例＝100%−厚片。</p>
+        </details>
+        <div class="pm-hist">
+          <div class="pm-hist-title">版本紀錄(點可唯讀查看該版參數)</div>
+          <div id="pzHistList"></div>
+        </div>
+        <div class="modal-actions"><button class="ghost-btn" data-close="pizzaBackdrop">取消</button><button class="edit-only primary-btn" id="pizzaSave">儲存設定</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 對照表版本查看(唯讀) -->
+  <div id="pmVerBackdrop" class="modal-backdrop hidden">
+    <div class="modal" style="width:min(400px,100%)">
+      <div class="modal-head"><div><h3 id="pmVerTitle"></h3><p>這是當時實際使用的對照(唯讀)</p></div><button class="icon-btn" data-close="pmVerBackdrop">✕</button></div>
+      <div class="modal-body">
+        <div class="pm-ver-range" id="pmVerRange"></div>
+        <div id="pmVerBody"></div>
+        <div class="modal-actions"><button class="primary-btn" data-close="pmVerBackdrop">關閉</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="js/dough-core.js"></script>
+  <script src="js/chicken-core.js"></script>
+  <script src="js/solar-terms.js"></script>
+  <script src="js/chicken.js"></script>
+  <script src="js/update.js"></script>
+</body>
+</html>

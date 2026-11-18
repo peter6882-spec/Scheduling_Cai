@@ -34,7 +34,7 @@
           <input id="staffNoInput" class="input big-input" autocomplete="off" inputmode="text" />
         </label>
         <label class="field">
-          <span>PIN碼（4位數）</span>
+          <span>PIN碼(4位數)</span>
           <input id="staffPinInput" class="input big-input" type="password" autocomplete="off" inputmode="numeric" maxlength="4"/>
         </label>
         <button id="staffLoginBtn" class="primary-btn full">進入員工專區</button>
@@ -53,15 +53,18 @@
         <div class="next-shift-card" id="nextShiftCard"></div>
         <div class="availability-window-banner" id="availabilityWindowBanner"></div>
 
-        <div class="staff-tabs">
+        <div class="staff-tabs staff-main-tabs">
           <button class="staff-tab active" data-staff-tab="mySchedule">我的班表</button>
           <button class="staff-tab" data-staff-tab="availability">填寫可上班時間</button>
+          <button class="staff-tab" data-staff-tab="stock">今日打烊剩餘</button>
+          <button class="staff-tab" data-staff-tab="dough" id="doughTabBtn" hidden>🍕 餅皮推估</button>
+          <button class="staff-tab" data-staff-tab="chicken" id="chickenTabBtn" hidden>🛒 訂購雞肉</button>
         </div>
 
         <div class="staff-tab-panel active" id="mySchedulePanel">
           <div class="panel">
             <div class="panel-head">
-              <div><h3>我的班表</h3><p>顯示即將到來與已結束（前後約三個月），含備註。</p></div>
+              <div><h3>我的班表</h3><p>顯示即將到來與已結束(前後約三個月)，含備註。</p></div>
               <div class="ms-head-actions">
                 <div class="seg" id="myViewTabs">
                   <button class="seg-btn active" data-myview="list">列表</button>
@@ -87,7 +90,7 @@
           </div>
         </div>
 
-        <!-- 我的班表：點日期彈出的當天明細（唯讀） -->
+        <!-- 我的班表：點日期彈出的當天明細(唯讀) -->
         <div class="day-sheet-backdrop hidden" id="myDaySheetBackdrop">
           <div class="day-sheet">
             <button type="button" class="day-sheet-close" id="myDaySheetClose" aria-label="關閉">✕</button>
@@ -95,6 +98,64 @@
               <div class="selected-day-head"><div><span class="eyebrow">這一天</span><h3 id="myDayTitle"></h3></div></div>
               <div id="myDayBody" class="my-day-body"></div>
             </div>
+          </div>
+        </div>
+
+        <div class="staff-tab-panel" id="stockPanel">
+          <div class="stock-today" id="stockToday"></div>
+
+          <div class="panel stock-card">
+            <div class="sc-head"><h3>🍗 剩餘雞肉(隻)</h3><span class="sc-badge wait" id="stockChickenBadge">尚未填寫</span></div>
+            <div class="sc-editor" id="stockChickenEditor">
+              <div class="stock-grid">
+                <label class="field"><span>🍗 雞腿</span><input id="stockLeg" class="input big-input" type="number" inputmode="numeric" min="0" placeholder="0" /></label>
+                <label class="field"><span>🥩 雞排</span><input id="stockFil" class="input big-input" type="number" inputmode="numeric" min="0" placeholder="0" /></label>
+                <label class="field"><span>🪽 雞翅</span><input id="stockWing" class="input big-input" type="number" inputmode="numeric" min="0" placeholder="0" /></label>
+              </div>
+              <button id="stockChickenBtn" class="primary-btn full">送出剩餘雞肉</button>
+            </div>
+            <div class="sc-locked hidden" id="stockChickenLocked"></div>
+          </div>
+
+          <div class="panel stock-card">
+            <div class="sc-head"><h3>🍕 剩餘餅皮(片)</h3><span class="sc-badge wait" id="stockDoughBadge">尚未填寫</span></div>
+            <div class="sc-editor" id="stockDoughEditor">
+              <div class="stock-pz">
+                <div class="pz-head"><span class="pz-lbl"></span><span>厚片</span><span>薄片</span></div>
+                <div class="pz-row"><span class="pz-lbl">9 吋</span><input id="stockT9" class="input" type="number" inputmode="numeric" min="0" placeholder="0" /><input id="stockS9" class="input" type="number" inputmode="numeric" min="0" placeholder="0" /></div>
+                <div class="pz-row"><span class="pz-lbl">12 吋</span><input id="stockT12" class="input" type="number" inputmode="numeric" min="0" placeholder="0" /><input id="stockS12" class="input" type="number" inputmode="numeric" min="0" placeholder="0" /></div>
+              </div>
+              <button id="stockDoughBtn" class="primary-btn full">送出剩餘餅皮</button>
+            </div>
+            <div class="sc-locked hidden" id="stockDoughLocked"></div>
+          </div>
+
+          <div class="stock-note-auto">ℹ️ 雞肉與餅皮<b>獨立提交、互不影響</b>。</div>
+          <div id="stockSaved" class="success-note"></div>
+        </div>
+
+        <!-- 打烊盤點防呆提醒 -->
+        <div class="stock-guard-backdrop hidden" id="stockGuard">
+          <div class="stock-guard" role="dialog" aria-modal="true">
+            <div class="sg-icon" id="sgIcon">⚠️</div>
+            <h3 id="sgTitle"></h3>
+            <p id="sgMsg"></p>
+            <div class="sg-actions"><button type="button" class="ghost-btn" id="sgNo">先不要</button><button type="button" class="primary-btn" id="sgYes">確定要填寫</button></div>
+          </div>
+        </div>
+
+        <div class="staff-tab-panel" id="chickenPanel">
+          <div class="panel">
+            <div class="panel-head"><div><h3>🛒 訂購雞肉</h3><p>今天起 2 個可下單日；只要確認公斤數再送出。</p></div></div>
+            <div id="chickenOrderList" class="oc-list"></div>
+          </div>
+        </div>
+
+        <div class="staff-tab-panel" id="doughPanel">
+          <div class="panel">
+            <div class="panel-head"><div><h3>🍕 餅皮推估</h3><p>今天起 2 個營業日，建議各做多少片餅皮(9吋/12吋 × 厚片/薄片)。</p></div></div>
+            <div id="doughStaffList" class="dough-staff-list"></div>
+            <div class="dough-staff-note">依近幾次同星期的平均賣出量推估；六日／假日另有「最少要備」的量。數字為建議製作量，實際仍可視現場調整。</div>
           </div>
         </div>
 
@@ -134,18 +195,18 @@
                   <label class="field"><span>最早可上班</span><select id="quickWeekStart" class="select"></select></label>
                   <label class="field"><span>最晚可下班</span><select id="quickWeekEnd" class="select"></select></label>
                 </div>
-                <label class="seg2-toggle"><input type="checkbox" id="quickWeekSeg2Toggle"> 加第二時段（例如早班＋晚班）</label>
+                <label class="seg2-toggle"><input type="checkbox" id="quickWeekSeg2Toggle"> 加第二時段(例如早班＋晚班)</label>
                 <div class="quick-week-time time-pair hidden" id="quickWeekSeg2Row">
                   <label class="field"><span>第二段・最早可上班</span><select id="quickWeekStart2" class="select"></select></label>
                   <label class="field"><span>第二段・最晚可下班</span><select id="quickWeekEnd2" class="select"></select></label>
                 </div>
                 <p class="qw-preview" id="quickWeekPreview"></p>
-                <div class="qw-actions"><button class="qw-btn-yes" id="quickWeekAvailable">一次套用（每週）為可上班</button></div>
-                <button type="button" class="qw-link-no" id="quickWeekUnavailable">改設為（每週）整天不可上班</button>
+                <div class="qw-actions"><button class="qw-btn-yes" id="quickWeekAvailable">一次套用(每週)為可上班</button></div>
+                <button type="button" class="qw-link-no" id="quickWeekUnavailable">改設為(每週)整天不可上班</button>
               </div>
             </div>
 
-            <!-- 逐日編輯：點日期才彈出的聚焦小卡（手機置底、桌機置中） -->
+            <!-- 逐日編輯：點日期才彈出的聚焦小卡(手機置底、桌機置中) -->
             <div class="day-sheet-backdrop hidden" id="daySheetBackdrop">
               <div class="day-sheet" id="daySheet" role="dialog" aria-modal="true">
                 <button type="button" class="day-sheet-close" id="daySheetClose" aria-label="關閉">✕</button>
@@ -162,12 +223,12 @@
                     <button class="quick-no" id="quickDayNo">✗ 不能上班</button>
                   </div>
                   <div class="day-detail">
-                    <p class="day-detail-title">或指定時段（只設這一天）</p>
+                    <p class="day-detail-title">或指定時段(只設這一天)</p>
                     <div class="time-pair">
                       <label class="field"><span>最早可上班</span><select id="availabilityStart" class="select"></select></label>
                       <label class="field"><span>最晚可下班</span><select id="availabilityEnd" class="select"></select></label>
                     </div>
-                    <label class="seg2-toggle"><input type="checkbox" id="availabilitySeg2Toggle"> 加第二時段（例如早班＋晚班）</label>
+                    <label class="seg2-toggle"><input type="checkbox" id="availabilitySeg2Toggle"> 加第二時段(例如早班＋晚班)</label>
                     <div class="time-pair hidden" id="availabilitySeg2Row">
                       <label class="field"><span>第二段・最早可上班</span><select id="availabilityStart2" class="select"></select></label>
                       <label class="field"><span>第二段・最晚可下班</span><select id="availabilityEnd2" class="select"></select></label>
@@ -188,6 +249,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/cloud.js"></script>
+  <script src="js/dough-core.js"></script>
+  <script src="js/chicken-core.js"></script>
   <script src="js/staff.js"></script>
   <script src="js/update.js"></script>
 </body>
